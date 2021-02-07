@@ -1,9 +1,10 @@
 [package]
 name = "crayfish"
 version = "0.1.0"
-authors = ["duckyquackquack <carl.mitchell.1987@gmail.com>"]
+authors = ["duckyquackquack"]
 edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+png_encode_mini = "0.1.2"

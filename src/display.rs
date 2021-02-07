@@ -3,19 +3,22 @@ pub struct Color {
     r: u8,
     g: u8,
     b: u8,
+    a: u8,
 }
+
+const NUM_COLOR_COMPONENTS: usize = 4;
 
 impl Color {
     pub fn new(r: u8, g: u8, b: u8) -> Color {
-        Color { r, g, b }
+        Color { r, g, b, a: 255 }
     }
 }
 
 #[derive(Debug)]
 pub struct Canvas {
-    width: usize,
-    height: usize,
-    data: Vec<Color>,
+    pub width: usize,
+    pub height: usize,
+    pub data: Vec<u8>,
 }
 
 impl Canvas {
@@ -23,18 +26,21 @@ impl Canvas {
         Canvas {
             width,
             height,
-            data: vec![Color::new(0, 0, 0); width * height],
+            data: vec![0; width * height * NUM_COLOR_COMPONENTS],
         }
     }
 
     pub fn set_pixel(&mut self, x: usize, y: usize, color: &Color) {
-        self.data[y * self.width + x] = *color;
+        self.data[y * self.width + x + 0] = color.r;
+        self.data[y * self.width + x + 1] = color.g;
+        self.data[y * self.width + x + 2] = color.b;
+        self.data[y * self.width + x + 3] = color.a;
     }
 }
 
 #[cfg(test)]
 mod canvas_tests {
-    use super::{Canvas, Color};
+    use super::{Canvas, Color, NUM_COLOR_COMPONENTS};
 
     #[test]
     fn constructs_canvas_of_given_size() {
@@ -45,7 +51,7 @@ mod canvas_tests {
 
         assert_eq!(canvas.height, height);
         assert_eq!(canvas.width, width);
-        assert_eq!(canvas.data.len(), width * height);
+        assert_eq!(canvas.data.len(), width * height * NUM_COLOR_COMPONENTS);
     }
 
     #[test]
@@ -61,6 +67,9 @@ mod canvas_tests {
 
         canvas.set_pixel(x, y, &color);
 
-        assert_eq!(canvas.data[y * width + x], color);
+        assert_eq!(canvas.data[y * width + x + 0], color.r);
+        assert_eq!(canvas.data[y * width + x + 1], color.g);
+        assert_eq!(canvas.data[y * width + x + 2], color.b);
+        assert_eq!(canvas.data[y * width + x + 3], color.a);
     }
 }
