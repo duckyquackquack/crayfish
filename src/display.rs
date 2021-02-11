@@ -6,8 +6,6 @@ pub struct Color {
     a: u8,
 }
 
-const NUM_COLOR_COMPONENTS: usize = 4;
-
 impl Color {
     pub fn new(r: u8, g: u8, b: u8) -> Color {
         Color { r, g, b, a: 255 }
@@ -18,7 +16,7 @@ impl Color {
 pub struct Canvas {
     pub width: usize,
     pub height: usize,
-    pub data: Vec<u8>,
+    pub data: Vec<Color>,
 }
 
 impl Canvas {
@@ -26,21 +24,29 @@ impl Canvas {
         Canvas {
             width,
             height,
-            data: vec![0; width * height * NUM_COLOR_COMPONENTS],
+            data: vec![Color::new(0, 0, 0); width * height],
         }
     }
 
     pub fn set_pixel(&mut self, x: usize, y: usize, color: &Color) {
-        self.data[y * self.width + x + 0] = color.r;
-        self.data[y * self.width + x + 1] = color.g;
-        self.data[y * self.width + x + 2] = color.b;
-        self.data[y * self.width + x + 3] = color.a;
+        self.data[y * self.width + x] = *color;
+    }
+
+    pub fn to_u8_vec(&self) -> Vec<u8> {
+        let mut u8_vec = Vec::new();
+        for color in self.data.iter() {
+            u8_vec.push(color.r);
+            u8_vec.push(color.g);
+            u8_vec.push(color.b);
+            u8_vec.push(color.a);
+        }
+        u8_vec
     }
 }
 
 #[cfg(test)]
 mod canvas_tests {
-    use super::{Canvas, Color, NUM_COLOR_COMPONENTS};
+    use super::{Canvas, Color};
 
     #[test]
     fn constructs_canvas_of_given_size() {
@@ -51,7 +57,7 @@ mod canvas_tests {
 
         assert_eq!(canvas.height, height);
         assert_eq!(canvas.width, width);
-        assert_eq!(canvas.data.len(), width * height * NUM_COLOR_COMPONENTS);
+        assert_eq!(canvas.data.len(), width * height);
     }
 
     #[test]
@@ -67,9 +73,6 @@ mod canvas_tests {
 
         canvas.set_pixel(x, y, &color);
 
-        assert_eq!(canvas.data[y * width + x + 0], color.r);
-        assert_eq!(canvas.data[y * width + x + 1], color.g);
-        assert_eq!(canvas.data[y * width + x + 2], color.b);
-        assert_eq!(canvas.data[y * width + x + 3], color.a);
+        assert_eq!(canvas.data[y * width + x], color);
     }
 }
