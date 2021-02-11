@@ -4,7 +4,7 @@ use crate::vec::Vec4d;
 
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub struct Matrix4d {
-    data: [[f64; 4]; 4],
+    pub data: [[f64; 4]; 4],
 }
 
 #[derive(Debug, PartialEq)]
