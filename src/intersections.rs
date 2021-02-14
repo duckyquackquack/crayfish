@@ -1,3 +1,4 @@
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub struct IntersectionPoint {
     pub object_id: u32,
     pub t: f64,

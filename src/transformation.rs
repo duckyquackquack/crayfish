@@ -1,6 +1,6 @@
 use crate::matrix::Matrix4d;
 
-struct TransformBuilder {
+pub struct TransformBuilder {
     transforms: Vec<Matrix4d>,
 }
 

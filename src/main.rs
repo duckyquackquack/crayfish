@@ -8,21 +8,46 @@ mod transformation;
 mod vec;
 
 use display::{Canvas, Color};
+use shapes::Sphere;
+use ray::Ray;
+use transformation::TransformBuilder;
+use vec::Vec4d;
 use png_encode_mini;
 
 use std::fs::File;
 
 fn main() {
-    let mut canvas = Canvas::new(1920, 1080);
-    let mut file = match File::create("C:\\Users\\User\\Pictures\\crayfish_renders\\crayfish.png") {
+    let mut canvas = Canvas::new(100, 100);
+    let mut file = match File::create("C:\\Users\\User\\Pictures\\crayfish_renders\\big_circle_lad.png") {
         Ok(file) => file,
         Err(err) => panic!("Error creating file: {}", err),
     };
 
+    let wall_z = 10.0;
+    let wall_size = 7.0;
+    let half = wall_size / 2.0;
+    let pixel_width_size = wall_size / canvas.width as f64;
+    let pixel_height_size = wall_size / canvas.height as f64;
+
+    let mut sphere = Sphere::new(0); 
+    // let transform = TransformBuilder::new().add_scale(0.4, 0.75, 0.6).build();
+    // sphere.set_transform(transform);
     let red = Color::new(255, 0, 0);
-    for x in 300..=500 {
-        for y in 300..=500 {
-            canvas.set_pixel(x, y, &red);
+    let ray_origin = Vec4d::new_point(0.0, 0.0, -5.0);
+
+    for y in 0..canvas.height {
+        let world_y = half - pixel_height_size * y as f64;
+        for x in 0..canvas.width {
+            let world_x = -half + pixel_width_size * x as f64;
+            let position = Vec4d::new_point(world_x, world_y, wall_z);
+
+            let r = Ray::new(ray_origin, (position - ray_origin).as_normalized());
+            let intersections = sphere.intersections(&r);
+            let hit = sphere.hit(&intersections);
+            
+            if let Some(_) = hit {
+                canvas.set_pixel(x, y, &red);
+            }
         }
     }
 
@@ -35,5 +60,4 @@ fn main() {
         canvas.height as u32,
     )
     .unwrap();
-    // //println!("{:?}", canvas);
 }

@@ -16,7 +16,7 @@ impl Color {
 pub struct Canvas {
     pub width: usize,
     pub height: usize,
-    pub data: Vec<Color>,
+    data: Vec<Color>,
 }
 
 impl Canvas {
