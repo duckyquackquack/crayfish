@@ -42,14 +42,14 @@ impl Sphere {
         intersection_points
     }
 
-    pub fn hit(&self, intersection_points: &Vec<IntersectionPoint>) -> Option<IntersectionPoint> {
+    pub fn hit(&self, intersection_points: &[IntersectionPoint]) -> Option<IntersectionPoint> {
         let mut non_negative_intersection_points: Vec<IntersectionPoint> = intersection_points
             .iter()
             .filter(|p| p.t > 0.0)
             .map(|p| *p)
             .collect();
 
-        if non_negative_intersection_points.len() == 0 {
+        if non_negative_intersection_points.is_empty() {
             return None;
         }
 

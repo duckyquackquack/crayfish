@@ -11,12 +11,7 @@ impl TransformBuilder {
         }
     }
 
-    pub fn add_translation<'a>(
-        &'a mut self,
-        tx: f64,
-        ty: f64,
-        tz: f64,
-    ) -> &'a mut TransformBuilder {
+    pub fn add_translation(&mut self, tx: f64, ty: f64, tz: f64) -> &mut TransformBuilder {
         let mut t = Matrix4d::identity();
 
         t.data[0][3] = tx;
@@ -28,7 +23,7 @@ impl TransformBuilder {
         self
     }
 
-    pub fn add_scale<'a>(&'a mut self, sx: f64, sy: f64, sz: f64) -> &'a mut TransformBuilder {
+    pub fn add_scale(&mut self, sx: f64, sy: f64, sz: f64) -> &mut TransformBuilder {
         let mut t = Matrix4d::identity();
 
         t.data[0][0] = sx;
@@ -40,7 +35,7 @@ impl TransformBuilder {
         self
     }
 
-    pub fn add_x_rotation<'a>(&'a mut self, rad: f64) -> &'a mut TransformBuilder {
+    pub fn add_x_rotation(&mut self, rad: f64) -> &mut TransformBuilder {
         let mut t = Matrix4d::identity();
 
         let s = rad.sin();
@@ -56,7 +51,7 @@ impl TransformBuilder {
         self
     }
 
-    pub fn add_y_rotation<'a>(&'a mut self, rad: f64) -> &'a mut TransformBuilder {
+    pub fn add_y_rotation(&mut self, rad: f64) -> &mut TransformBuilder {
         let mut t = Matrix4d::identity();
 
         let s = rad.sin();
@@ -72,7 +67,7 @@ impl TransformBuilder {
         self
     }
 
-    pub fn add_z_rotation<'a>(&'a mut self, rad: f64) -> &'a mut TransformBuilder {
+    pub fn add_z_rotation(&mut self, rad: f64) -> &mut TransformBuilder {
         let mut t = Matrix4d::identity();
 
         let s = rad.sin();
