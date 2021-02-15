@@ -1,4 +1,5 @@
 use crate::intersections::IntersectionPoint;
+use crate::material::Material;
 use crate::matrix::Matrix4d;
 use crate::ray::Ray;
 use crate::vec::Vec4d;
@@ -6,6 +7,7 @@ use crate::vec::Vec4d;
 pub struct Sphere {
     object_id: u32,
     transform: Matrix4d,
+    material: Material,
 }
 
 impl Sphere {
@@ -13,11 +15,27 @@ impl Sphere {
         Sphere {
             object_id,
             transform: Matrix4d::identity(),
+            material: Material::default(),
         }
     }
 
     pub fn set_transform(&mut self, transform: Matrix4d) {
         self.transform = transform;
+    }
+
+    pub fn set_material(&mut self, material: Material) {
+        self.material = material;
+    }
+
+    pub fn normal_at(&self, world_point: &Vec4d) -> Vec4d {
+        // (*point - Vec4d::new_point(0.0, 0.0, 0.0)).as_normalized()
+        let inverse_transform = self.transform.inverse();
+
+        let object_point = inverse_transform * world_point;
+        let object_normal = object_point - Vec4d::new_point(0.0, 0.0, 0.0);
+        let world_normal = inverse_transform.transpose() * object_normal;
+
+        world_normal.as_normalized()
     }
 
     pub fn intersections(&self, ray: &Ray) -> Vec<IntersectionPoint> {
@@ -242,5 +260,69 @@ mod sphere_tests {
         let result = sphere.intersections(&ray);
 
         assert_eq!(0, result.len());
+    }
+
+    #[test]
+    fn can_get_normal_at_point_on_each_axis() {
+        let sphere = Sphere::new(0);
+        let x_axis_result = sphere.normal_at(&Vec4d::new_point(1.0, 0.0, 0.0));
+        let y_axis_result = sphere.normal_at(&Vec4d::new_point(0.0, 1.0, 0.0));
+        let z_axis_result = sphere.normal_at(&Vec4d::new_point(0.0, 0.0, 1.0));
+
+        assert_eq!(x_axis_result, Vec4d::new_vector(1.0, 0.0, 0.0));
+        assert_eq!(y_axis_result, Vec4d::new_vector(0.0, 1.0, 0.0));
+        assert_eq!(z_axis_result, Vec4d::new_vector(0.0, 0.0, 1.0));
+    }
+
+    #[test]
+    fn can_get_normal_on_nonaxial_point() {
+        let sphere = Sphere::new(0);
+
+        let value = f64::sqrt(3.0) / 3.0;
+        let result = sphere.normal_at(&Vec4d::new_point(value, value, value));
+
+        assert_eq!(result, Vec4d::new_vector(value, value, value));
+    }
+
+    #[test]
+    fn normals_at_any_point_are_unit_vectors() {
+        let sphere = Sphere::new(0);
+        let x_axis_result = sphere.normal_at(&Vec4d::new_point(1.0, 0.0, 0.0));
+
+        assert_eq!(x_axis_result, x_axis_result.as_normalized());
+    }
+
+    #[test]
+    fn computes_normals_on_a_translated_sphere() {
+        let mut sphere = Sphere::new(0);
+        sphere.set_transform(
+            TransformBuilder::new()
+                .add_translation(0.0, 1.0, 0.0)
+                .build(),
+        );
+        let result = sphere.normal_at(&Vec4d::new_point(0.0, 1.70711, -0.70711));
+
+        assert_eq!(
+            result,
+            Vec4d::new_vector(0.0, 0.7071067811865475, -0.7071067811865476)
+        );
+    }
+
+    #[test]
+    fn computes_normals_on_a_scaled_and_rotated_sphere() {
+        let mut sphere = Sphere::new(0);
+        sphere.set_transform(
+            TransformBuilder::new()
+                .add_z_rotation(std::f64::consts::PI / 5.0)
+                .add_scale(1.0, 0.5, 1.0)
+                .build(),
+        );
+        let value = f64::sqrt(2.0) / 2.0;
+        let result = sphere.normal_at(&Vec4d::new_point(0.0, value, -value));
+
+        assert_eq!(
+            result,
+            Vec4d::new_vector(0.0, 0.9701425001453319, -0.24253562503633294)
+        );
     }
 }

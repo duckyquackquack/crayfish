@@ -42,12 +42,7 @@ impl Vec4d {
 
     pub fn as_normalized(&self) -> Vec4d {
         let magnitude = self.magnitude();
-        Vec4d {
-            x: self.x / magnitude,
-            y: self.y / magnitude,
-            z: self.z / magnitude,
-            w: self.w,
-        }
+        Vec4d::new_vector(self.x / magnitude, self.y / magnitude, self.z / magnitude)
     }
 
     pub fn dot(&self, other: &Vec4d) -> f64 {
@@ -61,6 +56,10 @@ impl Vec4d {
             z: self.x * other.y - self.y * other.x,
             w: 0.0,
         }
+    }
+
+    pub fn reflect_around(&self, normal: &Vec4d) -> Vec4d {
+        *self - *normal * 2.0 * self.dot(normal)
     }
 }
 
@@ -94,6 +93,19 @@ impl Sub for Vec4d {
     type Output = Vec4d;
 
     fn sub(self, other: Vec4d) -> Vec4d {
+        Vec4d {
+            x: self.x - other.x,
+            y: self.y - other.y,
+            z: self.z - other.z,
+            w: self.w - other.w,
+        }
+    }
+}
+
+impl Sub<&Vec4d> for Vec4d {
+    type Output = Vec4d;
+
+    fn sub(self, other: &Vec4d) -> Vec4d {
         Vec4d {
             x: self.x - other.x,
             y: self.y - other.y,
@@ -264,5 +276,29 @@ mod vec4d_tests {
         let result = a.cross(&b);
 
         assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn reflects_on_flat_surface() {
+        let v = Vec4d::new_vector(1.0, -1.0, 0.0);
+        let n = Vec4d::new_vector(0.0, 1.0, 0.0);
+
+        let result = v.reflect_around(&n);
+
+        assert_eq!(result, Vec4d::new_vector(1.0, 1.0, 0.0));
+    }
+
+    #[test]
+    fn relects_on_slanted_surface() {
+        let v = Vec4d::new_vector(0.0, -1.0, 0.0);
+        let n = Vec4d::new_vector(f64::sqrt(2.0) / 2.0, f64::sqrt(2.0) / 2.0, 0.0);
+
+        let result = v.reflect_around(&n);
+        let expected_result = Vec4d::new_vector(1.0, 0.0, 0.0);
+
+        assert!((result.x - expected_result.x).abs() < 0.0001);
+        assert!((result.y - expected_result.y).abs() < 0.0001);
+        assert!((result.z - expected_result.z).abs() < 0.0001);
+        assert!((result.w - expected_result.w).abs() < 0.0001);
     }
 }

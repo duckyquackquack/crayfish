@@ -1,0 +1,8 @@
+make multithreaded
+    - try various ways. e.g. construct threads ourselves, use tokio, use mpsc, use rayon, etc.
+
+change tests to have better comparisons against floating pointer numbers. e.g. (a - b).abs() < EPSILON
+
+see if using fixed point numbers will increase performance
+
+profile and benchmark in general to see if there are any major bottlenecks. Likely, since I'm very new to Rust.

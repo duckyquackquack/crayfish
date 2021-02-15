@@ -1,5 +1,8 @@
+mod color;
 mod display;
 mod intersections;
+mod light;
+mod material;
 mod math;
 mod matrix;
 mod ray;
@@ -7,16 +10,19 @@ mod shapes;
 mod transformation;
 mod vec;
 
-use display::{Canvas, Color};
+use color::Color;
+use display::Canvas;
 use ray::Ray;
 use shapes::Sphere;
 use transformation::TransformBuilder;
 use vec::Vec4d;
 
 use std::fs::File;
+use std::time::Instant;
 
 fn main() {
-    let mut canvas = Canvas::new(100, 100);
+    let mut now = Instant::now();
+    let mut canvas = Canvas::new(400, 400);
     let mut file =
         match File::create("C:\\Users\\User\\Pictures\\crayfish_renders\\big_circle_lad.png") {
             Ok(file) => file,
@@ -42,6 +48,9 @@ fn main() {
     let red = Color::new(255, 0, 0);
     let ray_origin = Vec4d::new_point(0.0, 0.0, -5.0);
 
+    println!("Setup of scene took {}ms", now.elapsed().as_millis());
+
+    now = Instant::now();
     for y in 0..canvas.height {
         let world_y = half - pixel_height_size * y as f64;
         for x in 0..canvas.width {
@@ -57,9 +66,13 @@ fn main() {
             }
         }
     }
+    println!("Ray tracing took {}ms", now.elapsed().as_millis());
 
+    now = Instant::now();
     let canvas_color_u8 = canvas.to_u8_vec();
+    println!("Converting to u8 vec took {}ms", now.elapsed().as_millis());
 
+    now = Instant::now();
     png_encode_mini::write_rgba_from_u8(
         &mut file,
         &canvas_color_u8,
@@ -67,4 +80,5 @@ fn main() {
         canvas.height as u32,
     )
     .unwrap();
+    println!("Saving as png took {}ms", now.elapsed().as_millis());
 }

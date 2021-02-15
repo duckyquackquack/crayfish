@@ -152,6 +152,27 @@ impl Mul<Vec4d> for Matrix4d {
     }
 }
 
+impl Mul<&Vec4d> for Matrix4d {
+    type Output = Vec4d;
+
+    fn mul(self, other: &Vec4d) -> Vec4d {
+        Vec4d {
+            x: (other.x * self.data[0][0])
+                + (other.y * self.data[0][1])
+                + (other.z * self.data[0][2] + other.w * self.data[0][3]),
+            y: (other.x * self.data[1][0])
+                + (other.y * self.data[1][1])
+                + (other.z * self.data[1][2] + other.w * self.data[1][3]),
+            z: (other.x * self.data[2][0])
+                + (other.y * self.data[2][1])
+                + (other.z * self.data[2][2] + other.w * self.data[2][3]),
+            w: (other.x * self.data[3][0])
+                + (other.y * self.data[3][1])
+                + (other.z * self.data[3][2] + other.w * self.data[3][3]),
+        }
+    }
+}
+
 impl Matrix3d {
     pub fn new() -> Matrix3d {
         Matrix3d {
