@@ -6,3 +6,27 @@ change tests to have better comparisons against floating pointer numbers. e.g. (
 see if using fixed point numbers will increase performance
 
 profile and benchmark in general to see if there are any major bottlenecks. Likely, since I'm very new to Rust.
+    - remove unnecessary allocations
+    - use caching 
+    - when setting transform, pre-compute the inverse and store as new property in struct
+    - spatial partioning, hierarchical bounding volumes and broad + narrow phase collision detection to reduce number of intersection tests
+    - multithreading
+    - slice reads/writes that are making use of spatial and temporal locality. 
+        e.g. test array usage in both row major and column major order, one might be faster
+    - simd if we can?
+    - utilize the GPU in some way
+    - checkerboard rendering, only trace every other pixel (performance at the cost of image quality)
+    - see optimizations sections in physically-based rendering book
+
+support "animations". i.e. produce several frames for scenes containing dynamic objects 
+
+png optimization. Saving it as raw png with no compression for a 10k * 10k scene = 381mb, yet opening
+and saving that picture in paint.net lowers it to almost nothing! (e.g. for hello world render, went down to 53kb!!)
+
+support multiple light sources 
+
+precompute stuff. lookup tables etc.
+
+add antialiasing
+
+add transparency (at the moment, alpha is hardcoded to 255 in the final png generation)

@@ -12,7 +12,7 @@ impl Canvas {
         Canvas {
             width,
             height,
-            data: vec![Color::new(0, 0, 0); width * height],
+            data: vec![Color::new(52.0 / 255.0, 198.0 / 255.0, 235.0 / 255.0); width * height],
         }
     }
 
@@ -21,13 +21,14 @@ impl Canvas {
     }
 
     pub fn to_u8_vec(&self) -> Vec<u8> {
-        let mut u8_vec = Vec::new();
+        let mut u8_vec = Vec::with_capacity(self.data.len() * 4);
         for color in self.data.iter() {
-            u8_vec.push(color.r);
-            u8_vec.push(color.g);
-            u8_vec.push(color.b);
-            u8_vec.push(color.a);
+            u8_vec.push((color.r.min(1.0) * 255.0) as u8);
+            u8_vec.push((color.g.min(1.0) * 255.0) as u8);
+            u8_vec.push((color.b.min(1.0) * 255.0) as u8);
+            u8_vec.push(255);
         }
+
         u8_vec
     }
 }
@@ -50,7 +51,7 @@ mod canvas_tests {
 
     #[test]
     fn writes_color_to_canvas_at_given_position() {
-        let color = Color::new(1, 0, 0);
+        let color = Color::new(1.0, 0.0, 0.0);
 
         let width = 64;
         let height = 32;

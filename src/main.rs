@@ -12,6 +12,8 @@ mod vec;
 
 use color::Color;
 use display::Canvas;
+use light::PointLight;
+use material::Material;
 use ray::Ray;
 use shapes::Sphere;
 use transformation::TransformBuilder;
@@ -22,7 +24,7 @@ use std::time::Instant;
 
 fn main() {
     let mut now = Instant::now();
-    let mut canvas = Canvas::new(400, 400);
+    let mut canvas = Canvas::new(1000, 1000);
     let mut file =
         match File::create("C:\\Users\\User\\Pictures\\crayfish_renders\\big_circle_lad.png") {
             Ok(file) => file,
@@ -35,17 +37,24 @@ fn main() {
     let pixel_width_size = wall_size / canvas.width as f64;
     let pixel_height_size = wall_size / canvas.height as f64;
 
+    let red = Color::new(1.0, 0.0, 0.0);
     let mut sphere = Sphere::new(0);
     let transform = TransformBuilder::new()
-        .add_translation(0.0, 0.0, 0.0)
+        .add_translation(1.0, 0.5, 5.0)
         .add_scale(1.0, 1.0, 1.0)
         .add_x_rotation(0.0)
         .add_y_rotation(0.0)
         .add_z_rotation(0.0)
         .build();
+    let mut material = Material::default();
+    material.color = red;
     sphere.set_transform(transform);
+    sphere.set_material(material);
 
-    let red = Color::new(255, 0, 0);
+    let light_color = Color::new(1.0, 1.0, 1.0);
+    let light_position = Vec4d::new_point(-10.0, -10.0, -10.0);
+    let light = PointLight::new(light_color, light_position);
+
     let ray_origin = Vec4d::new_point(0.0, 0.0, -5.0);
 
     println!("Setup of scene took {}ms", now.elapsed().as_millis());
@@ -62,7 +71,14 @@ fn main() {
             let hit = sphere.hit(&intersections);
 
             if hit.is_some() {
-                canvas.set_pixel(x, y, &red);
+                let hit_data = hit.unwrap();
+                let point = r.position_at(hit_data.t);
+                let normal = sphere.normal_at(&point);
+                let eye = -r.direction;
+
+                let pixel = light.shade(&sphere.material, &point, &eye, &normal);
+
+                canvas.set_pixel(x, y, &pixel);
             }
         }
     }

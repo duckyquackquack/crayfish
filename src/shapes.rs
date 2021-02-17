@@ -7,7 +7,7 @@ use crate::vec::Vec4d;
 pub struct Sphere {
     object_id: u32,
     transform: Matrix4d,
-    material: Material,
+    pub material: Material,
 }
 
 impl Sphere {
