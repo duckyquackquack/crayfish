@@ -15,7 +15,7 @@ use display::Canvas;
 use light::PointLight;
 use material::Material;
 use ray::Ray;
-use shapes::Sphere;
+use shapes::{Shape, Sphere};
 use transformation::TransformBuilder;
 use vec::Vec4d;
 
@@ -40,7 +40,7 @@ fn main() {
     let red = Color::new(1.0, 0.0, 0.0);
     let mut sphere = Sphere::new(0);
     let transform = TransformBuilder::new()
-        .add_translation(1.0, 0.5, 5.0)
+        .add_translation(-1.0, 0.5, 5.0)
         .add_scale(1.0, 1.0, 1.0)
         .add_x_rotation(0.0)
         .add_y_rotation(0.0)

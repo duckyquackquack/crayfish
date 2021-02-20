@@ -1,11 +1,13 @@
-#[derive(Debug, Copy, Clone, PartialEq)]
-pub struct IntersectionPoint {
-    pub object_id: u32,
+use crate::shapes::Shape;
+
+#[derive(Copy, Clone)]
+pub struct IntersectionPoint<'a> {
+    pub object: &'a dyn Shape,
     pub t: f64,
 }
 
-impl IntersectionPoint {
-    pub fn new(object_id: u32, t: f64) -> IntersectionPoint {
-        IntersectionPoint { object_id, t }
+impl IntersectionPoint<'_> {
+    pub fn new(object: &dyn Shape, t: f64) -> IntersectionPoint {
+        IntersectionPoint { object, t }
     }
 }
