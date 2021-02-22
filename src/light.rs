@@ -15,6 +15,13 @@ impl PointLight {
         }
     }
 
+    pub fn default() -> PointLight {
+        PointLight {
+            intensity: Color::new(1.0, 1.0, 1.0),
+            position: Vec4d::new_point(-10.0, 10.0, -10.0),
+        }
+    }
+
     //TODO: Not entirely convinced this is the right place for this logic
     pub fn shade(&self, material: &Material, point: &Vec4d, eye: &Vec4d, normal: &Vec4d) -> Color {
         let effective_color = material.color * self.intensity;

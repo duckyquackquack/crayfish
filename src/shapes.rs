@@ -7,6 +7,7 @@ use crate::vec::Vec4d;
 pub trait Shape {
     fn set_transform(&mut self, transform: Matrix4d);
     fn set_material(&mut self, material: Material);
+    fn get_material(&self) -> &Material;
     fn normal_at(&self, world_point: &Vec4d) -> Vec4d;
     fn intersections(&self, ray: &Ray) -> Vec<IntersectionPoint>;
     fn hit<'a>(
@@ -16,9 +17,8 @@ pub trait Shape {
 }
 
 pub struct Sphere {
-    object_id: u32,
     transform: Matrix4d,
-    pub material: Material,
+    material: Material,
 }
 
 impl Shape for Sphere {
@@ -28,6 +28,10 @@ impl Shape for Sphere {
 
     fn set_material(&mut self, material: Material) {
         self.material = material;
+    }
+
+    fn get_material(&self) -> &Material {
+        &self.material
     }
 
     fn normal_at(&self, world_point: &Vec4d) -> Vec4d {
@@ -83,9 +87,8 @@ impl Shape for Sphere {
 }
 
 impl Sphere {
-    pub fn new(object_id: u32) -> Sphere {
+    pub fn new() -> Sphere {
         Sphere {
-            object_id,
             transform: Matrix4d::identity(),
             material: Material::default(),
         }
@@ -105,7 +108,7 @@ mod sphere_tests {
 
     #[test]
     fn returns_two_intersections_when_hit_is_not_at_tangent() {
-        let sphere = Sphere::new(0);
+        let sphere = Sphere::new();
         let ray = Ray::new(
             Vec4d::new_point(0.0, 0.0, -5.0),
             Vec4d::new_vector(0.0, 0.0, 1.0),
@@ -120,7 +123,7 @@ mod sphere_tests {
 
     #[test]
     fn returns_duplicate_intersection_when_hit_is_at_tangent() {
-        let sphere = Sphere::new(0);
+        let sphere = Sphere::new();
         let ray = Ray::new(
             Vec4d::new_point(0.0, 1.0, -5.0),
             Vec4d::new_vector(0.0, 0.0, 1.0),
@@ -135,7 +138,7 @@ mod sphere_tests {
 
     #[test]
     fn returns_no_intesections_when_ray_misses_sphere() {
-        let sphere = Sphere::new(0);
+        let sphere = Sphere::new();
         let ray = Ray::new(
             Vec4d::new_point(0.0, 10.0, -5.0),
             Vec4d::new_vector(0.0, 0.0, 1.0),
@@ -148,7 +151,7 @@ mod sphere_tests {
 
     #[test]
     fn returns_alternating_intersections_when_ray_inside_sphere() {
-        let sphere = Sphere::new(0);
+        let sphere = Sphere::new();
         let ray = Ray::new(
             Vec4d::new_point(0.0, 0.0, 0.0),
             Vec4d::new_vector(0.0, 0.0, 1.0),
@@ -163,7 +166,7 @@ mod sphere_tests {
 
     #[test]
     fn returns_two_negative_intersections_when_ray_behind_sphere() {
-        let sphere = Sphere::new(0);
+        let sphere = Sphere::new();
         let ray = Ray::new(
             Vec4d::new_point(0.0, 0.0, 5.0),
             Vec4d::new_vector(0.0, 0.0, 1.0),
@@ -178,7 +181,7 @@ mod sphere_tests {
 
     #[test]
     fn smallest_hit_when_all_intersections_positive() {
-        let sphere = Sphere::new(0);
+        let sphere = Sphere::new();
         let intersections = vec![
             IntersectionPoint::new(&sphere, 1.0),
             IntersectionPoint::new(&sphere, 2.0),
@@ -195,7 +198,7 @@ mod sphere_tests {
 
     #[test]
     fn smallest_positive_hit_when_some_intersections_negative() {
-        let sphere = Sphere::new(0);
+        let sphere = Sphere::new();
         let intersections = vec![
             IntersectionPoint::new(&sphere, -1.0),
             IntersectionPoint::new(&sphere, 1.0),
@@ -212,7 +215,7 @@ mod sphere_tests {
 
     #[test]
     fn no_hit_when_all_intersections_negative() {
-        let sphere = Sphere::new(0);
+        let sphere = Sphere::new();
         let intersections = vec![
             IntersectionPoint::new(&sphere, -1.0),
             IntersectionPoint::new(&sphere, -2.0),
@@ -225,7 +228,7 @@ mod sphere_tests {
 
     #[test]
     fn hit_is_smallest_non_negative_intersection() {
-        let sphere = Sphere::new(0);
+        let sphere = Sphere::new();
         let intersections = vec![
             IntersectionPoint::new(&sphere, 5.0),
             IntersectionPoint::new(&sphere, 7.0),
@@ -244,7 +247,7 @@ mod sphere_tests {
 
     #[test]
     fn can_intersect_a_scaled_sphere() {
-        let mut sphere = Sphere::new(0);
+        let mut sphere = Sphere::new();
         sphere.set_transform(TransformBuilder::new().add_scale(2.0, 2.0, 2.0).build());
 
         let ray = Ray::new(
@@ -261,7 +264,7 @@ mod sphere_tests {
 
     #[test]
     fn can_intersect_a_translated_sphere() {
-        let mut sphere = Sphere::new(0);
+        let mut sphere = Sphere::new();
         sphere.set_transform(
             TransformBuilder::new()
                 .add_translation(5.0, 0.0, 0.0)
@@ -280,7 +283,7 @@ mod sphere_tests {
 
     #[test]
     fn can_get_normal_at_point_on_each_axis() {
-        let sphere = Sphere::new(0);
+        let sphere = Sphere::new();
         let x_axis_result = sphere.normal_at(&Vec4d::new_point(1.0, 0.0, 0.0));
         let y_axis_result = sphere.normal_at(&Vec4d::new_point(0.0, 1.0, 0.0));
         let z_axis_result = sphere.normal_at(&Vec4d::new_point(0.0, 0.0, 1.0));
@@ -292,7 +295,7 @@ mod sphere_tests {
 
     #[test]
     fn can_get_normal_on_nonaxial_point() {
-        let sphere = Sphere::new(0);
+        let sphere = Sphere::new();
 
         let value = f64::sqrt(3.0) / 3.0;
         let result = sphere.normal_at(&Vec4d::new_point(value, value, value));
@@ -302,7 +305,7 @@ mod sphere_tests {
 
     #[test]
     fn normals_at_any_point_are_unit_vectors() {
-        let sphere = Sphere::new(0);
+        let sphere = Sphere::new();
         let x_axis_result = sphere.normal_at(&Vec4d::new_point(1.0, 0.0, 0.0));
 
         assert_eq!(x_axis_result, x_axis_result.as_normalized());
@@ -310,7 +313,7 @@ mod sphere_tests {
 
     #[test]
     fn computes_normals_on_a_translated_sphere() {
-        let mut sphere = Sphere::new(0);
+        let mut sphere = Sphere::new();
         sphere.set_transform(
             TransformBuilder::new()
                 .add_translation(0.0, 1.0, 0.0)
@@ -326,7 +329,7 @@ mod sphere_tests {
 
     #[test]
     fn computes_normals_on_a_scaled_and_rotated_sphere() {
-        let mut sphere = Sphere::new(0);
+        let mut sphere = Sphere::new();
         sphere.set_transform(
             TransformBuilder::new()
                 .add_z_rotation(std::f64::consts::PI / 5.0)

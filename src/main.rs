@@ -1,4 +1,5 @@
 mod color;
+mod configuration;
 mod display;
 mod intersections;
 mod light;
@@ -9,27 +10,32 @@ mod ray;
 mod shapes;
 mod transformation;
 mod vec;
+mod world;
+mod worldbuilder;
 
-use color::Color;
+use configuration::Configuration;
 use display::Canvas;
-use light::PointLight;
-use material::Material;
 use ray::Ray;
-use shapes::{Shape, Sphere};
-use transformation::TransformBuilder;
 use vec::Vec4d;
+use worldbuilder::WorldBuilder;
 
 use std::fs::File;
+use std::io::BufReader;
 use std::time::Instant;
 
 fn main() {
+    let config_file =
+        File::open("C:\\Users\\User\\source\\repos\\rust\\crayfish\\src\\scene_config.json")
+            .unwrap();
+    let reader = BufReader::new(config_file);
+    let config: Configuration = serde_json::from_reader(reader).unwrap();
+
     let mut now = Instant::now();
-    let mut canvas = Canvas::new(1000, 1000);
-    let mut file =
-        match File::create("C:\\Users\\User\\Pictures\\crayfish_renders\\big_circle_lad.png") {
-            Ok(file) => file,
-            Err(err) => panic!("Error creating file: {}", err),
-        };
+    let mut canvas = Canvas::new(config.width as usize, config.height as usize);
+    let mut file = match File::create(config.output_path.clone()) {
+        Ok(file) => file,
+        Err(err) => panic!("Error creating file: {}", err),
+    };
 
     let wall_z = 10.0;
     let wall_size = 7.0;
@@ -37,24 +43,7 @@ fn main() {
     let pixel_width_size = wall_size / canvas.width as f64;
     let pixel_height_size = wall_size / canvas.height as f64;
 
-    let red = Color::new(1.0, 0.0, 0.0);
-    let mut sphere = Sphere::new(0);
-    let transform = TransformBuilder::new()
-        .add_translation(-1.0, 0.5, 5.0)
-        .add_scale(1.0, 1.0, 1.0)
-        .add_x_rotation(0.0)
-        .add_y_rotation(0.0)
-        .add_z_rotation(0.0)
-        .build();
-    let mut material = Material::default();
-    material.color = red;
-    sphere.set_transform(transform);
-    sphere.set_material(material);
-
-    let light_color = Color::new(1.0, 1.0, 1.0);
-    let light_position = Vec4d::new_point(-10.0, -10.0, -10.0);
-    let light = PointLight::new(light_color, light_position);
-
+    let world = WorldBuilder::from_config(&config);
     let ray_origin = Vec4d::new_point(0.0, 0.0, -5.0);
 
     println!("Setup of scene took {}ms", now.elapsed().as_millis());
@@ -67,19 +56,7 @@ fn main() {
             let position = Vec4d::new_point(world_x, world_y, wall_z);
 
             let r = Ray::new(ray_origin, (position - ray_origin).as_normalized());
-            let intersections = sphere.intersections(&r);
-            let hit = sphere.hit(&intersections);
-
-            if hit.is_some() {
-                let hit_data = hit.unwrap();
-                let point = r.position_at(hit_data.t);
-                let normal = sphere.normal_at(&point);
-                let eye = -r.direction;
-
-                let pixel = light.shade(&sphere.material, &point, &eye, &normal);
-
-                canvas.set_pixel(x, y, &pixel);
-            }
+            canvas.set_pixel(x, y, &world.color_at(&r));
         }
     }
     println!("Ray tracing took {}ms", now.elapsed().as_millis());
