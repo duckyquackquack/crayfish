@@ -1,6 +1,6 @@
 {
-	"width": 2000,
-	"height": 2000,
+	"width": 300,
+	"height": 300,
 	"backgroundColor": [0.0, 0.0, 1.0],
 	"outputPath": "C:\\Users\\User\\Pictures\\crayfish_renders\\big_circle_lad.png",
 	"shapes": [
@@ -38,9 +38,9 @@
 			"type": "sphere",
 			"material": {
 				"color": [0.0, 1.0, 0.3],
-				"ambient": 0.5,
-				"diffuse": 0.3,
-				"specular": 0.3,
+				"ambient": 0.1,
+				"diffuse": 0.9,
+				"specular": 0.9,
 				"shininess": 200.0
 			},
 			"transform": {

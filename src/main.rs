@@ -16,9 +16,8 @@ use display::Canvas;
 use ray::Ray;
 use worldbuilder::WorldBuilder;
 
-use std::fs::File;
-use std::io::BufReader;
 use std::time::Instant;
+use std::{fs::File, io::BufReader};
 
 use nalgebra::Vector4;
 
@@ -31,10 +30,6 @@ fn main() {
 
     let mut now = Instant::now();
     let mut canvas = Canvas::new(config.width as usize, config.height as usize);
-    let mut file = match File::create(config.output_path.clone()) {
-        Ok(file) => file,
-        Err(err) => panic!("Error creating file: {}", err),
-    };
 
     let wall_z = 10.0;
     let wall_size = 7.0;
@@ -51,12 +46,13 @@ fn main() {
     for y in 0..canvas.height {
         let world_y = half - pixel_height_size * y as f64;
         for x in 0..canvas.width {
-         
+            if (x + y) % 2 == 0 {
                 let world_x = -half + pixel_width_size * x as f64;
                 let position = Vector4::new(world_x, world_y, wall_z, 1.0);
-    
+
                 let r = Ray::new(ray_origin, (position - ray_origin).normalize());
                 canvas.set_pixel(x, y, &world.color_at(&r));
+            }
         }
     }
     println!("Ray tracing took {}ms", now.elapsed().as_millis());
@@ -66,12 +62,13 @@ fn main() {
     println!("Converting to u8 vec took {}ms", now.elapsed().as_millis());
 
     now = Instant::now();
-    png_encode_mini::write_rgba_from_u8(
-        &mut file,
+    image::save_buffer(
+        config.output_path,
         &canvas_color_u8,
-        canvas.width as u32,
-        canvas.height as u32,
+        config.width as u32,
+        config.height as u32,
+        image::ColorType::Rgb8,
     )
     .unwrap();
-    println!("Saving as png took {}ms", now.elapsed().as_millis());
+    println!("Saving as img took {}ms", now.elapsed().as_millis());
 }

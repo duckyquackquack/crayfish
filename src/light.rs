@@ -30,7 +30,6 @@ impl PointLight {
         eye: &Vector4<f64>,
         normal: &Vector4<f64>,
     ) -> Color {
-
         let effective_color = material.color * self.intensity;
         let to_light = (self.position - point).normalize();
 
