@@ -12,7 +12,7 @@ profile and benchmark in general to see if there are any major bottlenecks. Like
     - precompute stuff. lookup tables etc. e.g. precompute and store all known sin() and cos() calculations we'd need for our selected transformations?
     - spatial partioning, hierarchical bounding volumes and broad + narrow phase collision detection to reduce number of intersection tests. aka "acceleration structure" in some ray tracing books
     - slice reads/writes that are making use of spatial and temporal locality. 
-        e.g. test array usage in both row major and column major order, one might be faster
+        e.g. test array usage in both row major and column major order, one might be faster. maybe switch from 2d array to equivalent 1d array and see if theres a speed difference?
     - simd if we can?
     - utilize the GPU in some way - opengl compute shader seems good choice?
     - checkerboard rendering, only trace every other pixel (performance at the cost of image quality, useful for test scenes before deciding on a final large render)
@@ -28,7 +28,7 @@ and saving that picture in paint.net lowers it to almost nothing! (e.g. for hell
 
 support multiple light sources 
 
-
+not a fan of the y coord being inverted, e.g. -10 is above origin, 10 is below. would prefer the opposite.
 
 add antialiasing
 add shadows

@@ -4,9 +4,9 @@ use crate::light::PointLight;
 use crate::material::Material;
 use crate::shapes::{Shape, Sphere};
 use crate::transformation::TransformBuilder;
-use crate::vec::Vec4d;
 use crate::world::World;
 
+use nalgebra::Vector4;
 use std::rc::Rc;
 
 pub struct WorldBuilder;
@@ -48,10 +48,11 @@ impl WorldBuilder {
         }
 
         let light_config = &config.light;
-        let light_position = Vec4d::new_point(
+        let light_position = Vector4::new(
             light_config.position[0],
             light_config.position[1],
             light_config.position[2],
+            1.0,
         );
         let light_intensity = Color::new(
             light_config.intensity[0],

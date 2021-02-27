@@ -9,9 +9,9 @@
 			"material": {
 				"color": [1.0, 0.0, 0.0],
 				"ambient": 0.1,
-				"diffuse": 0.7,
-				"specular": 0.7,
-				"shininess": 10.0
+				"diffuse": 0.9,
+				"specular": 0.9,
+				"shininess": 200.0
 			},
 			"transform": {
 				"translation": [-1.0, 0.5, 5.0],
@@ -24,9 +24,9 @@
 			"material": {
 				"color": [0.0, 0.0, 1.0],
 				"ambient": 0.1,
-				"diffuse": 0.7,
-				"specular": 0.7,
-				"shininess": 10.0
+				"diffuse": 0.9,
+				"specular": 0.9,
+				"shininess": 200.0
 			},
 			"transform": {
 				"translation": [0.5, 0.5, 10.0],
@@ -37,11 +37,11 @@
 		{
 			"type": "sphere",
 			"material": {
-				"color": [0.0, 1.0, 0.0],
-				"ambient": 0.1,
-				"diffuse": 0.7,
-				"specular": 0.7,
-				"shininess": 10.0
+				"color": [0.0, 1.0, 0.3],
+				"ambient": 0.5,
+				"diffuse": 0.3,
+				"specular": 0.3,
+				"shininess": 200.0
 			},
 			"transform": {
 				"translation": [2.0, 0.5, 15.0],
