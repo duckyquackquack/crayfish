@@ -1,97 +1,64 @@
-use crate::intersections::IntersectionPoint;
-use crate::material::Material;
-use crate::ray::Ray;
+use crate::defs::Real;
+use crate::math::{Point3, Ray};
+use crate::records::IntersectionRecord;
 
-use nalgebra::{Matrix4, Vector4};
+use crate::material::Material;
+use std::rc::Rc;
 
 pub trait Shape {
-    fn set_transform(&mut self, transform: Matrix4<f64>);
-    fn set_material(&mut self, material: Material);
-    fn get_material(&self) -> &Material;
-    fn normal_at(&self, world_point: &Vector4<f64>) -> Vector4<f64>;
-    fn intersections(&self, ray: &Ray) -> Vec<IntersectionPoint>;
-    fn hit<'a>(
-        &self,
-        intersection_points: &'a [IntersectionPoint],
-    ) -> Option<IntersectionPoint<'a>>;
+    fn hit(&self, ray: &Ray, t_min: Real, t_max: Real) -> IntersectionRecord;
 }
 
 pub struct Sphere {
-    transform: Matrix4<f64>,
-    material: Material,
-}
-
-impl Shape for Sphere {
-    fn set_transform(&mut self, transform: Matrix4<f64>) {
-        self.transform = transform;
-    }
-
-    fn set_material(&mut self, material: Material) {
-        self.material = material;
-    }
-
-    fn get_material(&self) -> &Material {
-        &self.material
-    }
-
-    fn normal_at(&self, world_point: &Vector4<f64>) -> Vector4<f64> {
-        let inverse_transform = self.transform.try_inverse().unwrap();
-
-        let object_point = inverse_transform * world_point;
-        let object_normal = object_point - Vector4::new(0.0, 0.0, 0.0, 1.0);
-        let mut world_normal = inverse_transform.transpose() * object_normal;
-        world_normal[3] = 0.0;
-
-        world_normal.normalize()
-    }
-
-    fn intersections(&self, ray: &Ray) -> Vec<IntersectionPoint> {
-        let transformed_ray = ray * self.transform.try_inverse().unwrap();
-
-        let diff = transformed_ray.origin - Vector4::new(0.0, 0.0, 0.0, 1.0);
-
-        let a = transformed_ray.direction.dot(&transformed_ray.direction);
-        let b = 2.0 * transformed_ray.direction.dot(&diff);
-        let c = diff.dot(&diff) - 1.0;
-
-        let discriminant = b.powf(2.0) - (4.0 * a * c);
-        if discriminant < 0.0 {
-            return Vec::new();
-        }
-
-        let intersection_points = vec![
-            IntersectionPoint::new(self, (-b - discriminant.sqrt()) / (2.0 * a)),
-            IntersectionPoint::new(self, (-b + discriminant.sqrt()) / (2.0 * a)),
-        ];
-
-        intersection_points
-    }
-
-    fn hit<'a>(
-        &self,
-        intersection_points: &'a [IntersectionPoint],
-    ) -> Option<IntersectionPoint<'a>> {
-        let mut non_negative_intersection_points: Vec<IntersectionPoint> = intersection_points
-            .iter()
-            .filter(|p| p.t > 0.0)
-            .map(|p| *p)
-            .collect();
-
-        if non_negative_intersection_points.is_empty() {
-            return None;
-        }
-
-        non_negative_intersection_points.sort_by(|a, b| a.t.partial_cmp(&b.t).unwrap());
-
-        Some(non_negative_intersection_points[0])
-    }
+    center: Point3,
+    radius: Real,
+    material: Rc<dyn Material>,
 }
 
 impl Sphere {
-    pub fn new() -> Sphere {
+    pub fn new(center: Point3, radius: Real, material: Rc<dyn Material>) -> Sphere {
         Sphere {
-            transform: Matrix4::identity(),
-            material: Material::default(),
+            center,
+            radius,
+            material,
         }
+    }
+}
+
+impl Shape for Sphere {
+    fn hit(&self, ray: &Ray, t_min: Real, t_max: Real) -> IntersectionRecord {
+        let oc = ray.origin - self.center;
+
+        let a: Real = ray.direction.magnitude_squared();
+        let half_b: Real = oc.dot(&ray.direction);
+        let c: Real = oc.magnitude_squared() - self.radius * self.radius;
+
+        let discriminant: Real = half_b * half_b - (a * c);
+
+        if discriminant < 0.0 {
+            return IntersectionRecord::default();
+        }
+
+        let disc_sqrt: Real = discriminant.sqrt();
+        let mut root: Real = (-half_b - disc_sqrt) / a;
+        if root < t_min || root > t_max {
+            root = (-half_b + disc_sqrt) / a;
+            if root < t_min || root > t_max {
+                return IntersectionRecord::default();
+            }
+        }
+
+        let mut intersection = IntersectionRecord::default();
+        intersection.hit = true;
+        intersection.t = root;
+        intersection.point = ray.at(root);
+        intersection.normal = (intersection.point - self.center) / self.radius;
+        intersection.front_face = ray.direction.dot(&intersection.normal) < 0.0;
+        if !intersection.front_face {
+            intersection.normal = -intersection.normal;
+        }
+        intersection.material = self.material.clone();
+
+        intersection
     }
 }
