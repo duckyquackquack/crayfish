@@ -1,4 +1,5 @@
 mod camera;
+mod configuration;
 mod defs;
 mod display;
 mod material;
@@ -6,52 +7,37 @@ mod math;
 mod records;
 mod scene;
 mod shapes;
+mod worldbuilder;
 
+use configuration::Configuration;
 use defs::Real;
-use material::{Lambertian, Metal};
-use math::{Color3, Point3};
-use scene::World;
-use shapes::Sphere;
+use scene::WorldRenderRequest;
+use worldbuilder::WorldBuilder;
 
-use std::rc::Rc;
+use std::{fs::File, io::BufReader};
 
 fn main() {
-    let aspect_ratio: Real = 16.0 / 9.0;
-    let width: usize = 400;
-    let height: usize = (width as Real / aspect_ratio) as usize;
+    let config_file =
+        File::open("C:\\Users\\User\\source\\repos\\rust\\crayfish\\src\\scene_config.json")
+            .unwrap();
+    let reader = BufReader::new(config_file);
+    let config: Configuration = serde_json::from_reader(reader).unwrap();
 
-    let mut world = World::new();
+    let world = WorldBuilder::from_config(&config);
 
-    let ground = Sphere::new(
-        Point3::new(0.0, -100.5, -1.0),
-        100.0,
-        Rc::new(Lambertian::new(Color3::new(0.8, 0.8, 0.0))),
-    );
-    let middle_sphere = Sphere::new(
-        Point3::new(0.0, 0.0, -1.0),
-        0.5,
-        Rc::new(Lambertian::new(Color3::new(0.2, 0.5, 0.9))),
-    );
-    let left_sphere = Sphere::new(
-        Point3::new(-1.0, 0.0, -1.0),
-        0.5,
-        Rc::new(Metal::new(Color3::new(0.8, 0.8, 0.8), 0.3)),
-    );
-    let right_sphere = Sphere::new(
-        Point3::new(1.0, 0.0, -1.0),
-        0.5,
-        Rc::new(Metal::new(Color3::new(0.8, 0.6, 0.2), 1.0)),
-    );
+    let width = config.width as usize;
+    let height = (width as Real / config.aspect_ratio) as usize;
 
-    world.add_shape(Rc::new(middle_sphere));
-    world.add_shape(Rc::new(left_sphere));
-    world.add_shape(Rc::new(right_sphere));
-    world.add_shape(Rc::new(ground));
-
-    let canvas = world.render(width, height);
+    let canvas = world.render(WorldRenderRequest::new(
+        config.samples_per_pixel,
+        config.ray_max_depth,
+        config.ray_step,
+        width,
+        height,
+    ));
 
     image::save_buffer(
-        "C:\\Users\\User\\Pictures\\crayfish_renders\\output.png",
+        config.output_path,
         &canvas.to_u8_vec(),
         width as u32,
         height as u32,

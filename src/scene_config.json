@@ -1,0 +1,62 @@
+{
+	"width": 900,
+	"aspectRatio": 1.777777777,
+	"outputPath": "C:\\Users\\User\\Pictures\\crayfish_renders\\output.png",
+	"rayStep": 1,
+	"samplesPerPixel": 50,
+	"rayMaxDepth": 50,
+	"camera": {
+		"fovDeg": 90,
+		"position": [-2.0, 2.0, 1.0],
+		"lookAt": [0.0, 0.0, -1.0],
+		"up": [0.0, 1.0, 0.0]
+	},
+	"shapes": [
+		{
+			"type": "sphere",
+			"material": {
+				"type": "lambertian",
+				"diffuse": [0.1, 0.2, 0.5]
+			},
+			"transform": {
+				"position": [0.0, 0.0, -1.0],
+				"size": [0.5, 1.0, 1.0]
+			}
+		},
+		{
+			"type": "sphere",
+			"material": {
+				"type": "metal",
+				"diffuse": [0.8, 0.6, 0.2],
+				"fuzz": 0.2
+			},
+			"transform": {
+				"position": [-1.0, 0.0, -1.0],
+				"size": [0.5, 1.0, 1.0]
+			}
+		},
+		{
+			"type": "sphere",
+			"material": {
+				"type": "metal",
+				"diffuse": [1.0, 1.0, 1.0],
+				"fuzz": 0.8
+			},
+			"transform": {
+				"position": [1.0, 0.0, -1.0],
+				"size": [0.5, 1.0, 1.0]
+			}
+		},
+		{
+			"type": "sphere",
+			"material": {
+				"type": "lambertian",
+				"diffuse": [0.8, 0.8, 0.0]
+			},
+			"transform": {
+				"position": [0.0, -100.5, -1.0],
+				"size": [100.0, 1.0, 1.0]
+			}
+		}
+	]
+}

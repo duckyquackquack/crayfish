@@ -9,18 +9,36 @@ pub struct Camera {
 }
 
 impl Camera {
-    pub fn new() -> Camera {
-        let aspect_ratio: Real = 16.0 / 9.0;
+    pub fn default() -> Camera {
+        Camera::new(
+            Point3::default(),
+            Point3::new(0.0, 0.0, -1.0),
+            Vector3::new(0.0, 1.0, 0.0),
+            16.0 / 9.0,
+            90.0,
+        )
+    }
 
-        let viewport_height: Real = 2.0;
+    pub fn new(
+        origin: Point3,
+        look_at: Point3,
+        up: Vector3,
+        aspect_ratio: Real,
+        fov_deg: Real,
+    ) -> Camera {
+        let theta = fov_deg.to_radians();
+        let h = (theta * 0.5).tan();
+
+        let viewport_height: Real = 2.0 * h;
         let viewport_width: Real = aspect_ratio * viewport_height;
-        let focal_length: Real = 1.0;
 
-        let origin = Point3::new(0.0, 0.0, 0.0);
-        let horizontal = Vector3::new(viewport_width, 0.0, 0.0);
-        let vertical = Vector3::new(0.0, viewport_height, 0.0);
-        let lower_left_corner =
-            origin - (horizontal / 2.0) - (vertical / 2.0) - Vector3::new(0.0, 0.0, focal_length);
+        let w = (origin - look_at).as_normal();
+        let u = up.cross(&w).as_normal();
+        let v = w.cross(&u);
+
+        let horizontal = u * viewport_width;
+        let vertical = v * viewport_height;
+        let lower_left_corner = origin - (horizontal / 2.0) - (vertical / 2.0) - w;
 
         Camera {
             origin,

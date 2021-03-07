@@ -9,6 +9,32 @@ use crate::shapes::Shape;
 use rand::{self, Rng};
 use std::rc::Rc;
 
+pub struct WorldRenderRequest {
+    samples_per_pixel: i64,
+    ray_max_depth: i64,
+    ray_step: i64,
+    width: usize,
+    height: usize,
+}
+
+impl WorldRenderRequest {
+    pub fn new(
+        samples_per_pixel: i64,
+        ray_max_depth: i64,
+        ray_step: i64,
+        width: usize,
+        height: usize,
+    ) -> WorldRenderRequest {
+        WorldRenderRequest {
+            samples_per_pixel,
+            ray_max_depth,
+            ray_step,
+            width,
+            height,
+        }
+    }
+}
+
 pub struct World {
     shapes: Vec<Rc<dyn Shape>>,
     camera: Camera,
@@ -18,7 +44,7 @@ impl World {
     pub fn new() -> World {
         World {
             shapes: Vec::new(),
-            camera: Camera::new(),
+            camera: Camera::default(),
         }
     }
 
@@ -46,7 +72,7 @@ impl World {
         closest_intersection
     }
 
-    fn color_at(&self, ray: &Ray, depth: u16) -> Color3 {
+    fn color_at(&self, ray: &Ray, depth: i64) -> Color3 {
         if depth == 0 {
             return Color3::default();
         }
@@ -71,27 +97,28 @@ impl World {
         white * (1.0 - interp) + (blue * interp)
     }
 
-    pub fn render(&self, width: usize, height: usize) -> Canvas {
-        let mut canvas = Canvas::new(width, height);
-        let samples_per_pixel = 50;
-        let max_depth = 50;
+    pub fn render(&self, render_request: WorldRenderRequest) -> Canvas {
+        let mut canvas = Canvas::new(render_request.width, render_request.height);
 
         let mut rng = rand::thread_rng();
 
-        let step = 1;
-
-        for y in (0..height).rev().step_by(step) {
-            for x in (0..width).step_by(step) {
+        for y in (0..render_request.height)
+            .rev()
+            .step_by(render_request.ray_step as usize)
+        {
+            for x in (0..render_request.width).step_by(render_request.ray_step as usize) {
                 let mut color = Color3::default();
-                for _ in 0..samples_per_pixel {
-                    let px: Real = (x as Real + rng.gen_range(0.0..1.0)) / (width as Real - 1.0);
-                    let py: Real = (y as Real + rng.gen_range(0.0..1.0)) / (height as Real - 1.0);
+                for _ in 0..render_request.samples_per_pixel {
+                    let px: Real = (x as Real + rng.gen_range(0.0..1.0))
+                        / (render_request.width as Real - 1.0);
+                    let py: Real = (y as Real + rng.gen_range(0.0..1.0))
+                        / (render_request.height as Real - 1.0);
 
                     let r = self.camera.get_ray(px, py);
-                    color += self.color_at(&r, max_depth);
+                    color += self.color_at(&r, render_request.ray_max_depth);
                 }
 
-                canvas.set_pixel(x, y, &color, samples_per_pixel);
+                canvas.set_pixel(x, y, &color, render_request.samples_per_pixel);
             }
         }
 

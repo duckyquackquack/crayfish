@@ -16,7 +16,7 @@ impl Canvas {
         }
     }
 
-    pub fn set_pixel(&mut self, x: usize, y: usize, color: &Color3, samples_per_pixel: i32) {
+    pub fn set_pixel(&mut self, x: usize, y: usize, color: &Color3, samples_per_pixel: i64) {
         let mut red: Real = color[0];
         let mut green: Real = color[1];
         let mut blue: Real = color[2];
