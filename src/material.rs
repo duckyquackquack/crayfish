@@ -1,38 +1,78 @@
-use crate::color::Color;
+use crate::math::{Color3, Ray, Vector3};
+use crate::records::IntersectionRecord;
 
-#[derive(Debug)]
-pub struct Material {
-    pub color: Color,
-    pub ambient: f64,
-    pub diffuse: f64,
-    pub specular: f64,
-    pub shininess: f64,
+pub trait Material {
+    fn scatter(&self, r: &Ray, intersection: &IntersectionRecord) -> MaterialInteraction;
 }
 
-impl Material {
-    pub fn new(
-        color: Color,
-        ambient: f64,
-        diffuse: f64,
-        specular: f64,
-        shininess: f64,
-    ) -> Material {
-        Material {
-            color,
-            ambient,
-            diffuse,
-            specular,
-            shininess,
+pub struct MaterialInteraction {
+    pub attenuation: Color3,
+    pub scattered_ray: Ray,
+    pub scattered: bool,
+}
+
+pub struct DefaultMaterial;
+
+impl DefaultMaterial {
+    pub fn new() -> DefaultMaterial {
+        DefaultMaterial {}
+    }
+}
+
+impl Material for DefaultMaterial {
+    fn scatter(&self, r: &Ray, intersection: &IntersectionRecord) -> MaterialInteraction {
+        MaterialInteraction {
+            attenuation: Color3::new(0.0, 0.0, 0.0),
+            scattered: false,
+            scattered_ray: Ray::default(),
         }
     }
+}
 
-    pub fn default() -> Material {
-        Material {
-            color: Color::new(1.0, 1.0, 1.0),
-            ambient: 0.1,
-            diffuse: 0.9,
-            specular: 0.9,
-            shininess: 200.0,
+pub struct Lambertian {
+    diffuse: Color3,
+}
+
+impl Lambertian {
+    pub fn new(diffuse: Color3) -> Lambertian {
+        Lambertian { diffuse }
+    }
+}
+
+impl Material for Lambertian {
+    fn scatter(&self, r: &Ray, intersection: &IntersectionRecord) -> MaterialInteraction {
+        let mut scatter_direction = intersection.normal + Vector3::random_in_unit_sphere();
+
+        if scatter_direction.is_near_zero() {
+            scatter_direction = intersection.normal;
+        }
+
+        MaterialInteraction {
+            scattered: true,
+            attenuation: self.diffuse,
+            scattered_ray: Ray::new(intersection.point, scatter_direction),
+        }
+    }
+}
+
+pub struct Metal {
+    diffuse: Color3,
+}
+
+impl Metal {
+    pub fn new(diffuse: Color3) -> Metal {
+        Metal { diffuse }
+    }
+}
+
+impl Material for Metal {
+    fn scatter(&self, r: &Ray, intersection: &IntersectionRecord) -> MaterialInteraction {
+        let reflected = r.direction.as_normal().reflect(&intersection.normal);
+
+        MaterialInteraction {
+            scattered_ray: Ray::new(intersection.point, reflected),
+            attenuation: self.diffuse,
+            scattered: reflected.dot(&intersection.normal) > 0.0,
         }
     }
 }

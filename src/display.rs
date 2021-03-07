@@ -1,10 +1,10 @@
-use crate::color::Color;
+use crate::defs::Real;
+use crate::math::Color3;
 
-#[derive(Debug)]
 pub struct Canvas {
     pub width: usize,
     pub height: usize,
-    data: Vec<Color>,
+    data: Vec<Color3>,
 }
 
 impl Canvas {
@@ -12,23 +12,46 @@ impl Canvas {
         Canvas {
             width,
             height,
-            data: vec![Color::new(52.0 / 255.0, 198.0 / 255.0, 235.0 / 255.0); width * height],
+            data: vec![Color3::default(); width * height],
         }
     }
 
-    pub fn set_pixel(&mut self, x: usize, y: usize, color: &Color) {
-        self.data[(self.height as i32 - 1 - y as i32).abs() as usize * self.width + x] = *color;
+    pub fn set_pixel(&mut self, x: usize, y: usize, color: &Color3, samples_per_pixel: i32) {
+        let mut r: Real = color[0];
+        let mut g: Real = color[1];
+        let mut b: Real = color[2];
+
+        let scale: Real = 1.0 / samples_per_pixel as Real;
+        r = (scale * r).sqrt();
+        g = (scale * g).sqrt();
+        b = (scale * b).sqrt();
+
+        let new_color = Color3::new(r, g, b);
+
+        self.data[(self.height as i32 - 1 - y as i32).abs() as usize * self.width + x] = new_color;
     }
 
     pub fn to_u8_vec(&self) -> Vec<u8> {
         let mut u8_vec = Vec::with_capacity(self.data.len() * 3);
 
         for color in self.data.iter() {
-            u8_vec.push((color.r.min(1.0) * 255.0) as u8);
-            u8_vec.push((color.g.min(1.0) * 255.0) as u8);
-            u8_vec.push((color.b.min(1.0) * 255.0) as u8);
+            u8_vec.push((Self::clamp(color[0], 0.0, 0.999) * 256.0) as u8);
+            u8_vec.push((Self::clamp(color[1], 0.0, 0.999) * 256.0) as u8);
+            u8_vec.push((Self::clamp(color[2], 0.0, 0.999) * 256.0) as u8);
         }
 
         u8_vec
+    }
+
+    fn clamp(val: Real, min: Real, max: Real) -> Real {
+        if val < min {
+            return min;
+        }
+
+        if val > max {
+            return max;
+        }
+
+        val
     }
 }

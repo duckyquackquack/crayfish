@@ -1,9 +1,16 @@
 change tests to have better comparisons against floating pointer numbers. e.g. (a - b).abs() < EPSILON
 
+see if theres a way of getting some switch between f32 and f64 (e.g. like how in c++ you could do define real float or define real double to switch precision)
+
+create a window (minifb?) and update it every X samples so you can see it getting better in real time
+
 json file to read in scene description. e.g. shapes, their positions, materials, etc. the light and its properties etc.
 and creates a World object from it
 
+initially just have one instance of shape holds one instance of a material. This is technically wasteful if you have a scene full of objects with the same material but can worry about introducing some form of material factory/cache later on
+
 profile and benchmark in general to see if there are any major bottlenecks. Likely, since I'm very new to Rust.
+    - inlining. compiler probably already inlines a bunch of stuff for us but might be missing the odd function that could do with inlining
     - make multithreaded
     	- try various ways. e.g. construct threads ourselves, use tokio, use mpsc, use rayon, etc.
     - remove unnecessary allocations
