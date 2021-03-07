@@ -17,7 +17,7 @@ use std::rc::Rc;
 
 fn main() {
     let aspect_ratio: Real = 16.0 / 9.0;
-    let width: usize = 2000;
+    let width: usize = 400;
     let height: usize = (width as Real / aspect_ratio) as usize;
 
     let mut world = World::new();
@@ -35,12 +35,12 @@ fn main() {
     let left_sphere = Sphere::new(
         Point3::new(-1.0, 0.0, -1.0),
         0.5,
-        Rc::new(Metal::new(Color3::new(0.8, 0.8, 0.8))),
+        Rc::new(Metal::new(Color3::new(0.8, 0.8, 0.8), 0.3)),
     );
     let right_sphere = Sphere::new(
         Point3::new(1.0, 0.0, -1.0),
         0.5,
-        Rc::new(Metal::new(Color3::new(0.8, 0.6, 0.2))),
+        Rc::new(Metal::new(Color3::new(0.8, 0.6, 0.2), 1.0)),
     );
 
     world.add_shape(Rc::new(middle_sphere));

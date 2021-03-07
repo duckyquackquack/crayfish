@@ -17,16 +17,16 @@ impl Canvas {
     }
 
     pub fn set_pixel(&mut self, x: usize, y: usize, color: &Color3, samples_per_pixel: i32) {
-        let mut r: Real = color[0];
-        let mut g: Real = color[1];
-        let mut b: Real = color[2];
+        let mut red: Real = color[0];
+        let mut green: Real = color[1];
+        let mut blue: Real = color[2];
 
         let scale: Real = 1.0 / samples_per_pixel as Real;
-        r = (scale * r).sqrt();
-        g = (scale * g).sqrt();
-        b = (scale * b).sqrt();
+        red = (scale * red).sqrt();
+        green = (scale * green).sqrt();
+        blue = (scale * blue).sqrt();
 
-        let new_color = Color3::new(r, g, b);
+        let new_color = Color3::new(red, green, blue);
 
         self.data[(self.height as i32 - 1 - y as i32).abs() as usize * self.width + x] = new_color;
     }

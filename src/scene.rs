@@ -1,8 +1,8 @@
 use crate::camera::Camera;
 use crate::defs::Real;
 use crate::display::Canvas;
+use crate::math::Color3;
 use crate::math::Ray;
-use crate::math::{Color3, Vector3};
 use crate::records::IntersectionRecord;
 use crate::shapes::Shape;
 
@@ -73,8 +73,8 @@ impl World {
 
     pub fn render(&self, width: usize, height: usize) -> Canvas {
         let mut canvas = Canvas::new(width, height);
-        let samples_per_pixel = 125;
-        let max_depth = 250;
+        let samples_per_pixel = 50;
+        let max_depth = 50;
 
         let mut rng = rand::thread_rng();
 

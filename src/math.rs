@@ -1,4 +1,4 @@
-use crate::{defs::Real, display};
+use crate::defs::Real;
 
 use rand::{self, Rng};
 use std::ops::{Add, AddAssign, Div, DivAssign, Index, Mul, MulAssign, Neg, Sub};
