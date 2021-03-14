@@ -21,9 +21,7 @@ use std::{fs::File, io::BufReader};
 fn main() {
     let mut now = Instant::now();
     println!("Constructing world from config");
-    let config_file =
-        File::open("C:\\Users\\User\\source\\repos\\rust\\crayfish\\src\\scene_config.json")
-            .unwrap();
+    let config_file = File::open("scene_config.json").unwrap();
     let reader = BufReader::new(config_file);
     let config: Configuration = serde_json::from_reader(reader).unwrap();
 

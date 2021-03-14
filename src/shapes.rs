@@ -33,7 +33,7 @@ impl Shape for Sphere {
         let half_b: Real = oc.dot(&ray.direction);
         let c: Real = oc.magnitude_squared() - self.radius * self.radius;
 
-        let discriminant: Real = half_b * half_b - (a * c);
+        let discriminant: Real = half_b.powf(2.0) - (a * c);
 
         if discriminant < 0.0 {
             return IntersectionRecord::default();
