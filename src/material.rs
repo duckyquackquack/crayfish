@@ -96,3 +96,47 @@ impl Material for Metal {
         }
     }
 }
+
+pub struct Dielectric {
+    refraction_index: Real,
+}
+
+impl Dielectric {
+    pub fn new(refraction_index: Real) -> Dielectric {
+        Dielectric { refraction_index }
+    }
+
+    fn reflectance(cosine: Real, refraction_ratio: Real) -> Real {
+        let mut r0 = (1.0 - refraction_ratio) / (1.0 + refraction_ratio);
+        r0 = r0 * r0;
+        r0 + (1.0 - r0) * (1.0 - cosine).powf(5.0)
+    }
+}
+
+impl Material for Dielectric {
+    fn scatter(&self, r: &Ray, intersection: &IntersectionRecord) -> MaterialInteraction {
+        let refraction_ratio = match intersection.front_face {
+            true => (1.0 / self.refraction_index),
+            false => self.refraction_index,
+        };
+
+        let direction = r.direction.as_normal();
+        let cos_theta = Real::min(-direction.dot(&intersection.normal), 1.0);
+        let sin_theta = (1.0 - cos_theta * cos_theta).sqrt();
+
+        let cannot_refract = refraction_ratio * sin_theta > 1.0;
+
+        let new_direction;
+        if cannot_refract || Self::reflectance(cos_theta, refraction_ratio) > 1.0 {
+            new_direction = direction.reflect(&intersection.normal);
+        } else {
+            new_direction = direction.refract(&intersection.normal, refraction_ratio);
+        }
+
+        MaterialInteraction {
+            attenuation: Color3::new(1.0, 1.0, 1.0),
+            scattered: true,
+            scattered_ray: Ray::new(intersection.point, new_direction),
+        }
+    }
+}

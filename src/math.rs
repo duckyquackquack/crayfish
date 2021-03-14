@@ -35,7 +35,7 @@ impl Vector3 {
     }
 
     pub fn default() -> Vector3 {
-        Self::new(0.0, 0.0, 0.0)
+        Self::new(0.5, 0.5, 0.5)
     }
 
     pub fn magnitude(&self) -> Real {
@@ -72,6 +72,16 @@ impl Vector3 {
 
     pub fn reflect(&self, around: &Vector3) -> Vector3 {
         *self - (*around * 2.0 * self.dot(around))
+    }
+
+    pub fn refract(&self, normal: &Vector3, refraction_index: Real) -> Vector3 {
+        let cos_theta = Real::min(-self.dot(&normal), 1.0);
+
+        let perpendicular_component = (*self + (*normal * cos_theta)) * refraction_index;
+        let parallel_component =
+            *normal * -((1.0 - perpendicular_component.magnitude_squared()).abs()).sqrt();
+
+        perpendicular_component + parallel_component
     }
 }
 

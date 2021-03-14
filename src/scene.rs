@@ -64,7 +64,7 @@ impl World {
             let shape_intersection = shape.hit(&ray, t_min, closest_t);
 
             if shape_intersection.hit {
-                closest_t = closest_intersection.t;
+                closest_t = shape_intersection.t;
                 closest_intersection = shape_intersection;
             }
         }
@@ -77,7 +77,7 @@ impl World {
             return Color3::default();
         }
 
-        let intersection = self.hit(ray, 0.001, 100000.0);
+        let intersection = self.hit(ray, 0.001, Real::INFINITY);
         if intersection.hit {
             let material_interaction = intersection.material.scatter(&ray, &intersection);
 

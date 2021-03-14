@@ -33,7 +33,7 @@ impl Shape for Sphere {
         let half_b: Real = oc.dot(&ray.direction);
         let c: Real = oc.magnitude_squared() - self.radius * self.radius;
 
-        let discriminant: Real = half_b.powf(2.0) - (a * c);
+        let discriminant: Real = half_b * half_b - (a * c);
 
         if discriminant < 0.0 {
             return IntersectionRecord::default();
@@ -41,9 +41,9 @@ impl Shape for Sphere {
 
         let disc_sqrt: Real = discriminant.sqrt();
         let mut root: Real = (-half_b - disc_sqrt) / a;
-        if root < t_min || root > t_max {
+        if root < t_min || t_max < root {
             root = (-half_b + disc_sqrt) / a;
-            if root < t_min || root > t_max {
+            if root < t_min || t_max < root {
                 return IntersectionRecord::default();
             }
         }
@@ -51,7 +51,7 @@ impl Shape for Sphere {
         let mut intersection = IntersectionRecord::default();
         intersection.hit = true;
         intersection.t = root;
-        intersection.point = ray.at(root);
+        intersection.point = ray.at(intersection.t);
         intersection.normal = (intersection.point - self.center) / self.radius;
         intersection.front_face = ray.direction.dot(&intersection.normal) < 0.0;
         if !intersection.front_face {

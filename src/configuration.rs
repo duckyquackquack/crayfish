@@ -37,8 +37,9 @@ pub struct Shape {
 pub struct Material {
     #[serde(rename = "type")]
     pub type_field: String,
-    pub diffuse: Vec<Real>,
+    pub diffuse: Option<Vec<Real>>,
     pub fuzz: Option<Real>,
+    pub refraction_index: Option<Real>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]

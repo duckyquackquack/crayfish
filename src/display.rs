@@ -43,6 +43,25 @@ impl Canvas {
         u8_vec
     }
 
+    pub fn to_u32_vec(&self) -> Vec<u32> {
+        let mut u32_vec = Vec::with_capacity(self.data.len() * 3);
+
+        for color in self.data.iter() {
+            let r = (Self::clamp(color[0], 0.0, 0.999) * 256.0) as u8;
+            let g = (Self::clamp(color[1], 0.0, 0.999) * 256.0) as u8;
+            let b = (Self::clamp(color[2], 0.0, 0.999) * 256.0) as u8;
+
+            u32_vec.push(Self::from_u8_rgb(r, g, b));
+        }
+
+        u32_vec
+    }
+
+    fn from_u8_rgb(r: u8, g: u8, b: u8) -> u32 {
+        let (r, g, b) = (r as u32, g as u32, b as u32);
+        (r << 16) | (g << 8) | b
+    }
+
     fn clamp(val: Real, min: Real, max: Real) -> Real {
         if val < min {
             return min;

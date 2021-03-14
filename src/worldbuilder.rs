@@ -1,7 +1,7 @@
 use crate::camera::Camera;
 use crate::configuration::Configuration;
 use crate::defs::Real;
-use crate::material::{Lambertian, Metal};
+use crate::material::{Dielectric, Lambertian, Metal};
 use crate::math::{Point3, Vector3};
 use crate::scene::World;
 use crate::shapes::Sphere;
@@ -73,6 +73,11 @@ fn create_sphere(shape: &crate::configuration::Shape) -> Sphere {
             radius,
             Rc::new(create_metal_material(&shape.material)),
         ),
+        "dielectric" => Sphere::new(
+            position,
+            radius,
+            Rc::new(create_dielectric_material(&shape.material)),
+        ),
         _ => panic!(format!(
             "Unsupported material type: {}",
             shape.material.type_field
@@ -80,21 +85,20 @@ fn create_sphere(shape: &crate::configuration::Shape) -> Sphere {
     }
 }
 
+fn create_dielectric_material(material: &crate::configuration::Material) -> Dielectric {
+    Dielectric::new(material.refraction_index.unwrap())
+}
+
 fn create_metal_material(material: &crate::configuration::Material) -> Metal {
+    let diffuse = material.diffuse.as_ref().unwrap();
     Metal::new(
-        Vector3::new(
-            material.diffuse[0],
-            material.diffuse[1],
-            material.diffuse[2],
-        ),
+        Vector3::new(diffuse[0], diffuse[1], diffuse[2]),
         material.fuzz.unwrap_or(0.0),
     )
 }
 
 fn create_lambertian_material(material: &crate::configuration::Material) -> Lambertian {
-    Lambertian::new(Vector3::new(
-        material.diffuse[0],
-        material.diffuse[1],
-        material.diffuse[2],
-    ))
+    let diffuse = material.diffuse.as_ref().unwrap();
+
+    Lambertian::new(Vector3::new(diffuse[0], diffuse[1], diffuse[2]))
 }
