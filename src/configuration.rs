@@ -21,6 +21,7 @@ pub struct Camera {
     pub position: Vec<Real>,
     pub look_at: Vec<Real>,
     pub up: Vec<Real>,
+    pub aperture: Real,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]

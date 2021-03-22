@@ -1,15 +1,16 @@
 {
-	"width": 400,
+	"width": 800,
 	"aspectRatio": 1.777777777,
 	"outputPath": "C:\\Users\\User\\Pictures\\crayfish_renders\\output.png",
-	"rayStep": 2,
+	"rayStep": 1,
 	"samplesPerPixel": 150,
 	"rayMaxDepth": 150,
 	"camera": {
 		"fovDeg": 50,
-		"position": [2.0, 1.5, 1.0],
+		"position": [3.0, 3.0, 2.0],
 		"lookAt": [0.0, 0.0, -1.0],
-		"up": [0.0, 1.0, 0.0]
+		"up": [0.0, 1.0, 0.0],
+		"aperture": 2.0
 	},
 	"shapes": [
 		{

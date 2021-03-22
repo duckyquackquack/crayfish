@@ -2,8 +2,7 @@ use crate::defs::Real;
 
 use rand::{self, Rng};
 use std::ops::{Add, AddAssign, Div, DivAssign, Index, Mul, MulAssign, Neg, Sub};
-
-#[derive(Clone, Copy)]
+#[derive(Copy, Clone)]
 pub struct Vector3 {
     data: [Real; 3],
 }
@@ -34,8 +33,21 @@ impl Vector3 {
         }
     }
 
+    pub fn random_in_unit_disk() -> Vector3 {
+        loop {
+            let mut p = Self::new_random(-1.0, 1.0);
+            p.data[2] = 0.0;
+
+            if p.magnitude_squared() >= 1.0 {
+                continue;
+            }
+
+            return p;
+        }
+    }
+
     pub fn default() -> Vector3 {
-        Self::new(0.5, 0.5, 0.5)
+        Self::new(0.0, 0.0, 0.0)
     }
 
     pub fn magnitude(&self) -> Real {
@@ -139,6 +151,20 @@ impl Sub for Vector3 {
     }
 }
 
+impl Sub<Vector3> for &Vector3 {
+    type Output = Vector3;
+
+    fn sub(self, other: Vector3) -> Vector3 {
+        Vector3 {
+            data: [
+                self[0] - other.data[0],
+                self[1] - other.data[1],
+                self[2] - other.data[2],
+            ],
+        }
+    }
+}
+
 impl MulAssign for Vector3 {
     fn mul_assign(&mut self, other: Vector3) {
         self.data[0] *= other.data[0];
@@ -200,7 +226,6 @@ impl DivAssign for Vector3 {
 pub type Point3 = Vector3;
 pub type Color3 = Vector3;
 
-#[derive(Copy, Clone)]
 pub struct Ray {
     pub origin: Point3,
     pub direction: Vector3,
@@ -213,12 +238,5 @@ impl Ray {
 
     pub fn at(&self, t: Real) -> Point3 {
         self.origin + (self.direction * t)
-    }
-
-    pub fn default() -> Ray {
-        Ray {
-            origin: Vector3::default(),
-            direction: Vector3::default(),
-        }
     }
 }

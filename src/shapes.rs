@@ -6,7 +6,7 @@ use crate::material::Material;
 use std::rc::Rc;
 
 pub trait Shape {
-    fn hit(&self, ray: &Ray, t_min: Real, t_max: Real) -> IntersectionRecord;
+    fn hit(&self, ray: &Ray, t_min: Real, t_max: Real) -> Option<IntersectionRecord>;
 }
 
 pub struct Sphere {
@@ -26,17 +26,17 @@ impl Sphere {
 }
 
 impl Shape for Sphere {
-    fn hit(&self, ray: &Ray, t_min: Real, t_max: Real) -> IntersectionRecord {
+    fn hit(&self, ray: &Ray, t_min: Real, t_max: Real) -> Option<IntersectionRecord> {
         let oc = ray.origin - self.center;
 
         let a: Real = ray.direction.magnitude_squared();
         let half_b: Real = oc.dot(&ray.direction);
         let c: Real = oc.magnitude_squared() - self.radius * self.radius;
 
-        let discriminant: Real = half_b.powf(2.0) - (a * c);
+        let discriminant: Real = half_b * half_b - (a * c);
 
         if discriminant < 0.0 {
-            return IntersectionRecord::default();
+            return None;
         }
 
         let disc_sqrt: Real = discriminant.sqrt();
@@ -44,21 +44,24 @@ impl Shape for Sphere {
         if root < t_min || t_max < root {
             root = (-half_b + disc_sqrt) / a;
             if root < t_min || t_max < root {
-                return IntersectionRecord::default();
+                return None;
             }
         }
 
-        let mut intersection = IntersectionRecord::default();
-        intersection.hit = true;
-        intersection.t = root;
-        intersection.point = ray.at(intersection.t);
-        intersection.normal = (intersection.point - self.center) / self.radius;
-        intersection.front_face = ray.direction.dot(&intersection.normal) < 0.0;
-        if !intersection.front_face {
-            intersection.normal = -intersection.normal;
+        let intersection_point = ray.at(root);
+        let mut intersection_normal = (intersection_point - self.center) / self.radius;
+        let front_face = ray.direction.dot(&intersection_normal) < 0.0;
+        if !front_face {
+            intersection_normal = -intersection_normal;
         }
-        intersection.material = self.material.clone();
+        let intersection = IntersectionRecord::new(
+            intersection_point,
+            intersection_normal,
+            root,
+            front_face,
+            self.material.clone(),
+        );
 
-        intersection
+        Some(intersection)
     }
 }

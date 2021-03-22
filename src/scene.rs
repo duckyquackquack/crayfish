@@ -41,10 +41,10 @@ pub struct World {
 }
 
 impl World {
-    pub fn new() -> World {
+    pub fn new(camera: Camera) -> World {
         World {
             shapes: Vec::new(),
-            camera: Camera::default(),
+            camera,
         }
     }
 
@@ -52,21 +52,17 @@ impl World {
         self.shapes.push(shape);
     }
 
-    pub fn set_camera(&mut self, camera: Camera) {
-        self.camera = camera;
-    }
-
-    fn hit(&self, ray: &Ray, t_min: Real, t_max: Real) -> IntersectionRecord {
-        let mut closest_intersection = IntersectionRecord::default();
+    fn hit(&self, ray: &Ray, t_min: Real, t_max: Real) -> Option<IntersectionRecord> {
+        let mut closest_intersection: Option<IntersectionRecord> = None;
         let mut closest_t: Real = t_max;
 
         for shape in self.shapes.iter() {
             let shape_intersection = shape.hit(&ray, t_min, closest_t);
 
-            if shape_intersection.hit {
-                closest_t = shape_intersection.t;
+            if let Some(ref intersection) = shape_intersection {
+                closest_t = intersection.t;
                 closest_intersection = shape_intersection;
-            }
+            };
         }
 
         closest_intersection
@@ -77,8 +73,9 @@ impl World {
             return Color3::default();
         }
 
-        let intersection = self.hit(ray, 0.001, Real::INFINITY);
-        if intersection.hit {
+        let shape_intersection = self.hit(ray, 0.001, Real::INFINITY);
+
+        if let Some(ref intersection) = shape_intersection {
             let material_interaction = intersection.material.scatter(&ray, &intersection);
 
             if material_interaction.scattered {
@@ -106,6 +103,7 @@ impl World {
             .rev()
             .step_by(render_request.ray_step as usize)
         {
+            println!("Remaining scanlines: {}", y);
             for x in (0..render_request.width).step_by(render_request.ray_step as usize) {
                 let mut color = Color3::default();
                 for _ in 0..render_request.samples_per_pixel {

@@ -2,8 +2,6 @@ change tests to have better comparisons against floating pointer numbers. e.g. (
 
 create a window (minifb?) and update it every X samples so you can see it getting better in real time
 
-reduce number of allocations. e.g. allow shared borrowing, slices, etc. Preferably all/most of my structs should be able to not need Copy, Clone etc.
-
 all those times where I needed to use * to deref something before using ".some_method()", impl Deref for that type instead.
 
 initially just have one instance of shape holds one instance of a material. This is technically wasteful if you have a scene full of objects with the same material but can worry about introducing some form of material factory/cache later on
@@ -12,7 +10,7 @@ profile and benchmark in general to see if there are any major bottlenecks. Like
     - inlining. compiler probably already inlines a bunch of stuff for us but might be missing the odd function that could do with inlining
     - make multithreaded
     	- try various ways. e.g. construct threads ourselves, use tokio, use mpsc, use rayon, etc.
-    - remove unnecessary allocations
+    - remove unnecessary allocations - e.g. allow shared borrowing, slices, etc. Preferably all/most of my structs should be able to not need Copy, Clone etc.
     - use caching 
     	-e.g when setting transform, pre-compute the inverse and store as new property in struct
     - precompute stuff. lookup tables etc. e.g. precompute and store all known sin() and cos() calculations we'd need for our selected transformations?
@@ -21,10 +19,10 @@ profile and benchmark in general to see if there are any major bottlenecks. Like
         e.g. test array usage in both row major and column major order, one might be faster. maybe switch from 2d array to equivalent 1d array and see if theres a speed difference?
     - simd if we can?
     - utilize the GPU in some way - opengl compute shader seems good choice?
-    - checkerboard rendering, only trace every other pixel (performance at the cost of image quality, useful for test scenes before deciding on a final large render)
     - see optimizations sections in physically-based rendering book
     - see if using fixed point numbers will increase performance
     - for normalized vectors, don't need use sqrt for some of the calculations since sqrt(1) = 1, so magnitude_squared can be used instead
+    - memory arenas to decrease number of heap allocations - https://manishearth.github.io/blog/2021/03/15/arenas-in-rust/
 
 support "animations". i.e. produce several frames for scenes containing dynamic objects 
 
@@ -32,10 +30,7 @@ support multiple light sources
 
 not a fan of the y coord being inverted, e.g. -10 is above origin, 10 is below. would prefer the opposite.
 
-reimplement timings output
-
 add shadows
-add mirror, glass, metal materials
 add ambient occlusion
 add "combined shapes", don't know the proper technical term. Using things like a signed distance function so you can perform an 
 intersection or union of multiple shapes to create new ones.

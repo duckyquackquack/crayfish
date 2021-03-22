@@ -12,7 +12,8 @@ pub struct WorldBuilder;
 
 impl WorldBuilder {
     pub fn from_config(config: &Configuration) -> World {
-        let mut world = World::new();
+        let camera = create_camera(config);
+        let mut world = World::new(camera);
 
         for shape in config.shapes.iter() {
             match &shape.type_field[..] {
@@ -21,36 +22,27 @@ impl WorldBuilder {
             }
         }
 
-        let camera = create_camera(config);
-        world.set_camera(camera);
-
         world
     }
 }
 
 fn create_camera(config: &crate::configuration::Configuration) -> Camera {
-    let origin = Point3::new(
-        config.camera.position[0],
-        config.camera.position[1],
-        config.camera.position[2],
-    );
-    let look_at = Point3::new(
-        config.camera.look_at[0],
-        config.camera.look_at[1],
-        config.camera.look_at[2],
-    );
-    let up = Vector3::new(
-        config.camera.up[0],
-        config.camera.up[1],
-        config.camera.up[2],
-    );
+    let camera = &config.camera;
+
+    let origin = Point3::new(camera.position[0], camera.position[1], camera.position[2]);
+    let look_at = Point3::new(camera.look_at[0], camera.look_at[1], camera.look_at[2]);
+    let up = Vector3::new(camera.up[0], camera.up[1], camera.up[2]);
+
+    let focus_distance = (origin - look_at).magnitude();
 
     Camera::new(
         origin,
         look_at,
         up,
         config.aspect_ratio,
-        config.camera.fov_deg,
+        camera.fov_deg,
+        focus_distance,
+        camera.aperture,
     )
 }
 

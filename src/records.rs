@@ -1,5 +1,5 @@
 use crate::defs::Real;
-use crate::material::{DefaultMaterial, Material};
+use crate::material::Material;
 use crate::math::{Point3, Vector3};
 
 use std::rc::Rc;
@@ -9,19 +9,23 @@ pub struct IntersectionRecord {
     pub normal: Vector3,
     pub t: Real,
     pub front_face: bool,
-    pub hit: bool,
     pub material: Rc<dyn Material>,
 }
 
 impl IntersectionRecord {
-    pub fn default() -> IntersectionRecord {
-        IntersectionRecord {
-            point: Point3::default(),
-            normal: Vector3::default(),
-            t: 0.0,
-            front_face: false,
-            hit: false,
-            material: Rc::new(DefaultMaterial::new()),
+    pub fn new(
+        point: Point3,
+        normal: Vector3,
+        t: Real,
+        front_face: bool,
+        material: Rc<dyn Material>,
+    ) -> Self {
+        Self {
+            point,
+            normal,
+            t,
+            front_face,
+            material,
         }
     }
 }

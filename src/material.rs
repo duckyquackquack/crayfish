@@ -2,6 +2,8 @@ use crate::defs::Real;
 use crate::math::{Color3, Ray, Vector3};
 use crate::records::IntersectionRecord;
 
+use rand::Rng;
+
 pub trait Material {
     fn scatter(&self, r: &Ray, intersection: &IntersectionRecord) -> MaterialInteraction;
 }
@@ -10,24 +12,6 @@ pub struct MaterialInteraction {
     pub attenuation: Color3,
     pub scattered_ray: Ray,
     pub scattered: bool,
-}
-
-pub struct DefaultMaterial;
-
-impl DefaultMaterial {
-    pub fn new() -> DefaultMaterial {
-        DefaultMaterial {}
-    }
-}
-
-impl Material for DefaultMaterial {
-    fn scatter(&self, _r: &Ray, _intersection: &IntersectionRecord) -> MaterialInteraction {
-        MaterialInteraction {
-            attenuation: Color3::new(0.0, 0.0, 0.0),
-            scattered: false,
-            scattered_ray: Ray::default(),
-        }
-    }
 }
 
 pub struct Lambertian {
@@ -127,7 +111,11 @@ impl Material for Dielectric {
         let cannot_refract = refraction_ratio * sin_theta > 1.0;
 
         let new_direction;
-        if cannot_refract || Self::reflectance(cos_theta, refraction_ratio) > 1.0 {
+        let mut rng = rand::thread_rng();
+
+        if cannot_refract
+            || Self::reflectance(cos_theta, refraction_ratio) > rng.gen_range(0.0..1.0)
+        {
             new_direction = direction.reflect(&intersection.normal);
         } else {
             new_direction = direction.refract(&intersection.normal, refraction_ratio);
