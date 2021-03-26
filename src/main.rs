@@ -12,15 +12,14 @@ mod worldbuilder;
 use camera::Camera;
 use configuration::Configuration;
 use defs::Real;
-use material::{Dielectric, Lambertian, Metal};
+use material::Material;
 use math::{Color3, Point3, Vector3};
 use minifb::{Key, Window, WindowOptions};
 use rand::Rng;
 use scene::{World, WorldRenderRequest};
-use shapes::Sphere;
+use shapes::Shape;
 use worldbuilder::WorldBuilder;
 
-use std::rc::Rc;
 use std::time::{Duration, Instant};
 use std::{fs::File, io::BufReader};
 
@@ -37,14 +36,16 @@ fn random_scene() -> World {
 
     let mut world = World::new(camera);
 
-    let ground_material = Lambertian::new(Color3::new(0.5, 0.5, 0.5));
-    let ground = Sphere::new(
-        Vector3::new(0.0, -1000.0, 0.0),
-        1000.0,
-        Rc::new(ground_material),
-    );
+    let ground_material = Material::Lambertian {
+        diffuse: Color3::new(0.5, 0.5, 0.5),
+    };
+    let ground = Shape::Sphere {
+        center: Vector3::new(0.0, -1000.0, 0.0),
+        radius: 1000.0,
+        material: ground_material,
+    };
 
-    world.add_shape(Rc::new(ground));
+    world.add_shape(ground);
 
     let mut rng = rand::thread_rng();
     for a in -11..11 {
@@ -59,38 +60,71 @@ fn random_scene() -> World {
             if (center - Point3::new(4.0, 0.2, 0.0)).magnitude() > 0.9 {
                 if rand_material_choice < 0.8 {
                     let diffuse = Color3::new_random(0.0, 1.0) * Color3::new_random(0.0, 1.0);
-                    let material = Lambertian::new(diffuse);
-                    let sphere = Sphere::new(center, 0.2, Rc::new(material));
+                    let material = Material::Lambertian { diffuse };
+                    let sphere = Shape::Sphere {
+                        center,
+                        radius: 0.2,
+                        material,
+                    };
 
-                    world.add_shape(Rc::new(sphere));
+                    world.add_shape(sphere);
                 } else if rand_material_choice < 0.95 {
                     let diffuse = Color3::new_random(0.5, 1.0);
                     let fuzz = rng.gen_range(0.0..0.5);
-                    let material = Metal::new(diffuse, fuzz);
-                    let sphere = Sphere::new(center, 0.2, Rc::new(material));
+                    let material = Material::Metal { diffuse, fuzz };
+                    let sphere = Shape::Sphere {
+                        center,
+                        radius: 0.2,
+                        material,
+                    };
 
-                    world.add_shape(Rc::new(sphere));
+                    world.add_shape(sphere);
                 } else {
-                    let material = Dielectric::new(1.5);
-                    let sphere = Sphere::new(center, 0.2, Rc::new(material));
+                    let material = Material::Dielectric {
+                        refraction_index: 1.5,
+                    };
+                    let sphere = Shape::Sphere {
+                        center,
+                        radius: 0.2,
+                        material,
+                    };
 
-                    world.add_shape(Rc::new(sphere));
+                    world.add_shape(sphere);
                 }
             }
         }
     }
 
-    let material1 = Dielectric::new(1.5);
-    let sphere1 = Sphere::new(Point3::new(0.0, 1.0, 0.0), 1.0, Rc::new(material1));
-    world.add_shape(Rc::new(sphere1));
+    let material1 = Material::Dielectric {
+        refraction_index: 1.5,
+    };
+    let sphere1 = Shape::Sphere {
+        center: Point3::new(0.0, 1.0, 0.0),
+        radius: 1.0,
+        material: material1,
+    };
+    world.add_shape(sphere1);
 
-    let material2 = Lambertian::new(Color3::new(0.4, 0.2, 0.1));
-    let sphere2 = Sphere::new(Point3::new(-4.0, 1.0, 0.0), 1.0, Rc::new(material2));
-    world.add_shape(Rc::new(sphere2));
+    let material2 = Material::Lambertian {
+        diffuse: Color3::new(0.4, 0.2, 0.1),
+    };
+    let sphere2 = Shape::Sphere {
+        center: Point3::new(-4.0, 1.0, 0.0),
+        radius: 1.0,
+        material: material2,
+    };
+    world.add_shape(sphere2);
 
-    let material3 = Metal::new(Color3::new(0.7, 0.6, 0.5), 0.0);
-    let sphere3 = Sphere::new(Point3::new(4.0, 1.0, 0.0), 1.0, Rc::new(material3));
-    world.add_shape(Rc::new(sphere3));
+    let material3 = Material::Metal {
+        diffuse: Color3::new(0.7, 0.6, 0.5),
+        fuzz: 0.0,
+    };
+    let sphere3 = Shape::Sphere {
+        center: Point3::new(4.0, 1.0, 0.0),
+        radius: 1.0,
+        material: material3,
+    };
+    world.add_shape(sphere3);
 
     world
 }
@@ -102,10 +136,10 @@ fn ray_tracing_in_one_weekend_scene() {
 
     now = Instant::now();
     println!("Rendering scene");
-    let width = 1200;
+    let width = 200;
     let aspect_ratio = 16.0 / 9.0;
     let height = (width as Real / aspect_ratio) as usize;
-    let canvas = world.render(WorldRenderRequest::new(500, 50, 1, width, height));
+    let canvas = world.render(WorldRenderRequest::new(100, 50, 1, width, height));
     println!("Scene rendered. Took {}ms", now.elapsed().as_millis());
 
     now = Instant::now();
@@ -222,5 +256,6 @@ fn render_from_config() {
 }
 
 fn main() {
+    // ray_tracing_in_one_weekend_scene();
     render_from_config();
 }

@@ -23,7 +23,7 @@ profile and benchmark in general to see if there are any major bottlenecks. Like
     - see if using fixed point numbers will increase performance
     - for normalized vectors, don't need use sqrt for some of the calculations since sqrt(1) = 1, so magnitude_squared can be used instead
     - memory arenas to decrease number of heap allocations - https://manishearth.github.io/blog/2021/03/15/arenas-in-rust/
-
+    - look at https://github.com/ekzhang/rpt and see what optimizations they are using
 support "animations". i.e. produce several frames for scenes containing dynamic objects 
 
 support multiple light sources 

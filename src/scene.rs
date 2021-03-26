@@ -1,13 +1,13 @@
 use crate::camera::Camera;
 use crate::defs::Real;
 use crate::display::Canvas;
+use crate::material::Scatterer;
 use crate::math::Color3;
 use crate::math::Ray;
 use crate::records::IntersectionRecord;
-use crate::shapes::Shape;
+use crate::shapes::{Intersectable, Shape};
 
 use rand::{self, Rng};
-use std::rc::Rc;
 
 pub struct WorldRenderRequest {
     samples_per_pixel: i64,
@@ -36,7 +36,7 @@ impl WorldRenderRequest {
 }
 
 pub struct World {
-    shapes: Vec<Rc<dyn Shape>>,
+    shapes: Vec<Shape>,
     camera: Camera,
 }
 
@@ -48,7 +48,7 @@ impl World {
         }
     }
 
-    pub fn add_shape(&mut self, shape: Rc<dyn Shape>) {
+    pub fn add_shape(&mut self, shape: Shape) {
         self.shapes.push(shape);
     }
 
@@ -78,9 +78,8 @@ impl World {
         if let Some(ref intersection) = shape_intersection {
             let material_interaction = intersection.material.scatter(&ray, &intersection);
 
-            if material_interaction.scattered {
-                return material_interaction.attenuation
-                    * self.color_at(&material_interaction.scattered_ray, depth - 1);
+            if let Some(m) = material_interaction {
+                return m.attenuation * self.color_at(&m.scattered_ray, depth - 1);
             }
             return Color3::new(0.0, 0.0, 0.0);
         }

@@ -1,12 +1,10 @@
 use crate::camera::Camera;
 use crate::configuration::Configuration;
 use crate::defs::Real;
-use crate::material::{Dielectric, Lambertian, Metal};
-use crate::math::{Point3, Vector3};
+use crate::material::Material;
+use crate::math::{Color3, Point3, Vector3};
 use crate::scene::World;
-use crate::shapes::Sphere;
-
-use std::rc::Rc;
+use crate::shapes::Shape;
 
 pub struct WorldBuilder;
 
@@ -17,8 +15,8 @@ impl WorldBuilder {
 
         for shape in config.shapes.iter() {
             match &shape.type_field[..] {
-                "sphere" => world.add_shape(Rc::new(create_sphere(shape))),
-                _ => panic!(format!("Unsupported shape type: {}", shape.type_field)),
+                "sphere" => world.add_shape(create_sphere(shape)),
+                _ => panic!("Unsupported shape type"),
             }
         }
 
@@ -46,7 +44,7 @@ fn create_camera(config: &crate::configuration::Configuration) -> Camera {
     )
 }
 
-fn create_sphere(shape: &crate::configuration::Shape) -> Sphere {
+fn create_sphere(shape: &crate::configuration::Shape) -> Shape {
     let radius: Real = shape.transform.size[0];
     let position = Point3::new(
         shape.transform.position[0],
@@ -55,42 +53,43 @@ fn create_sphere(shape: &crate::configuration::Shape) -> Sphere {
     );
 
     match &shape.material.type_field[..] {
-        "lambertian" => Sphere::new(
-            position,
+        "lambertian" => Shape::Sphere {
+            center: position,
             radius,
-            Rc::new(create_lambertian_material(&shape.material)),
-        ),
-        "metal" => Sphere::new(
-            position,
+            material: create_lambertian_material(&shape.material),
+        },
+        "metal" => Shape::Sphere {
+            center: position,
             radius,
-            Rc::new(create_metal_material(&shape.material)),
-        ),
-        "dielectric" => Sphere::new(
-            position,
+            material: create_metal_material(&shape.material),
+        },
+        "dielectric" => Shape::Sphere {
+            center: position,
             radius,
-            Rc::new(create_dielectric_material(&shape.material)),
-        ),
-        _ => panic!(format!(
-            "Unsupported material type: {}",
-            shape.material.type_field
-        )),
+            material: create_dielectric_material(&shape.material),
+        },
+        _ => panic!("Unsupported material type"),
     }
 }
 
-fn create_dielectric_material(material: &crate::configuration::Material) -> Dielectric {
-    Dielectric::new(material.refraction_index.unwrap())
+fn create_dielectric_material(material: &crate::configuration::Material) -> Material {
+    Material::Dielectric {
+        refraction_index: material.refraction_index.unwrap(),
+    }
 }
 
-fn create_metal_material(material: &crate::configuration::Material) -> Metal {
+fn create_metal_material(material: &crate::configuration::Material) -> Material {
     let diffuse = material.diffuse.as_ref().unwrap();
-    Metal::new(
-        Vector3::new(diffuse[0], diffuse[1], diffuse[2]),
-        material.fuzz.unwrap_or(0.0),
-    )
+    Material::Metal {
+        diffuse: Color3::new(diffuse[0], diffuse[1], diffuse[2]),
+        fuzz: material.fuzz.unwrap_or(0.0),
+    }
 }
 
-fn create_lambertian_material(material: &crate::configuration::Material) -> Lambertian {
+fn create_lambertian_material(material: &crate::configuration::Material) -> Material {
     let diffuse = material.diffuse.as_ref().unwrap();
 
-    Lambertian::new(Vector3::new(diffuse[0], diffuse[1], diffuse[2]))
+    Material::Lambertian {
+        diffuse: Vector3::new(diffuse[0], diffuse[1], diffuse[2]),
+    }
 }
